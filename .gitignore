@@ -7,4 +7,4 @@ src/A-filter-ahojdb/error.txt
 src/B-create-dataset/cached_smiles.csv
 src/B-create-dataset/ligand.tsv
 src/B-create-dataset/playground.ipynb
-
+src/other/*.csv
