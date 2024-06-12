@@ -4,3 +4,7 @@ src/*/__pycache__/
 src/A-filter-ahojdb/output
 src/A-filter-ahojdb/tmp-data
 src/A-filter-ahojdb/error.txt
+src/B-create-dataset/cached_smiles.csv
+src/B-create-dataset/ligand.tsv
+src/B-create-dataset/playground.ipynb
+
