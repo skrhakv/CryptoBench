@@ -8,9 +8,9 @@ INPUT_PATH = '../../data/A-filter-ahojdb'
 INPUT_CSV = f'{INPUT_PATH}/pairs.csv'
 OUTPUT_PATH = '../../data/B-create-dataset'
 if SINGLE_CHAIN_ONLY:
-    OUTPUT_PATH += '/single-chain-with-covalent-ligands'
+    OUTPUT_PATH += '/single-chain-all-biolip-ligands'
 else:
-    OUTPUT_PATH += '/multi-chain-with-covalent-ligands'
+    OUTPUT_PATH += '/multi-chain-all-biolip-ligands'
 PREFILTERED_CSV = f'{OUTPUT_PATH}/filtered_rmsd.csv'
 DATASET_DATAFRAME = f'{OUTPUT_PATH}/dataset_dataframe.csv'
 

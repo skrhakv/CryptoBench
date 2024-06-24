@@ -104,10 +104,18 @@ def filter_valid_ligands(df, path):
        ] = df['apo_query_POI'].str.split('_', expand=True)
 
     # check each ligand in dataset using smiles
-    df = remove_ignored_groups(df)
+
+    # ignore the P2RANK filtering for now ...
+    # df = remove_ignored_groups(df)
+    # valid_ligands_rmsd_df = df[
+    #     (df['ligand'].isin(valid_ligands_df['#CCD'].values)) &
+    #     (df['ligand'].apply(lambda ligand: check_ligand_atom_count(valid_ligands_df[valid_ligands_df['#CCD'] == ligand]['SMILES'])))]
+
+    # filter only those values not present in BioLIP
+    print(f'All ligands: {len(df)}')
     valid_ligands_rmsd_df = df[
-        (df['ligand'].isin(valid_ligands_df['#CCD'].values)) &
-        (df['ligand'].apply(lambda ligand: check_ligand_atom_count(valid_ligands_df[valid_ligands_df['#CCD'] == ligand]['SMILES'])))]
+    (df['ligand'].isin(valid_ligands_df['#CCD'].values))]
+    print(f'BIOLIP-only ligands: {len(valid_ligands_rmsd_df)}')
 
     # save cached results for better performance next time
     with open(cached_smiles_path, 'w') as f:
