@@ -21,6 +21,35 @@ cached_smiles = {}
 
 P2RANK_ATOMS_NUM_THRESHOLD = 5
 
+# DEFINE FILTER THRESHOLDS
+MAX_POCKET_RMSD = 2
+MIN_TM_SCORE = 0.5
+MAX_POCKET_DISTANCE = 4
+MIN_ROG_PERCENTAGE = 0.8
+MAX_ROG_PERCENTAGE = 1.2
+MIN_SEQUENCE_LENGTH = 50
+
+def get_well_defined_pairs(df, sequence_length_filter=True):
+    if sequence_length_filter:
+        return df[(df['apo_tm_score'] > MIN_TM_SCORE) &
+                         (df['apo_tm_score_i'] > MIN_TM_SCORE) &
+                         (df['apo_pocket_dist'] < MAX_POCKET_DISTANCE) &
+                         (df['apo_RoG'] * MAX_ROG_PERCENTAGE > df['holo_RoG']) &
+                         (df['apo_RoG'] * MIN_ROG_PERCENTAGE < df['holo_RoG']) &
+                         (df['holo_RoG'] * MAX_ROG_PERCENTAGE > df['apo_RoG']) &
+                         (df['holo_RoG'] * MIN_ROG_PERCENTAGE < df['apo_RoG']) &
+                         # check that each sequence comply the MIN_SEQUENCE_LENGTH requirement
+                         (df['apo_UNPovrlp_obs'] > MIN_SEQUENCE_LENGTH)]
+                         # (df['apo_sequence_length'].apply(lambda sequence_lengths: all(int(i) > MIN_SEQUENCE_LENGTH for i in str(sequence_lengths).split('_'))))]
+    else:
+        return df[(df['apo_tm_score'] > MIN_TM_SCORE) &
+                         (df['apo_tm_score_i'] > MIN_TM_SCORE) &
+                         (df['apo_pocket_dist'] < MAX_POCKET_DISTANCE) &
+                         (df['apo_RoG'] * MAX_ROG_PERCENTAGE > df['holo_RoG']) &
+                         (df['apo_RoG'] * MIN_ROG_PERCENTAGE < df['holo_RoG']) &
+                         (df['holo_RoG'] * MAX_ROG_PERCENTAGE > df['apo_RoG']) &
+                         (df['holo_RoG'] * MIN_ROG_PERCENTAGE < df['apo_RoG'])]
+
 
 def check_ligand_atom_count(smiles):
     # TODO: switch for p2rank-based filtering:
@@ -32,6 +61,7 @@ def check_ligand_atom_count(smiles):
     for i in str(smiles.values[0]).split(';'):
         i = i.strip()
         if i in cached_smiles.keys():
+            print(f'{i} is in cached_smiles!')
             if cached_smiles[i]:
                 return True
             else:
@@ -40,6 +70,7 @@ def check_ligand_atom_count(smiles):
             molecule = Chem.MolFromSmiles(i)
             atoms_count = molecule.GetNumAtoms()
         except:
+            cached_smiles[i] = False
             continue
 
         is_valid_smiles = True
@@ -74,7 +105,7 @@ IGNORED_GROUPS_LIST = ['HOH', 'DOD', 'WAT', 'NAG',
 
 def remove_ignored_groups(df):
     """P2RANK defines a list of ignored groups: (HOH, DOD, WAT, NAG, MAN, UNK, GLC, ABA, MPD, GOL, SO4, PO4). This function removes them from the dataframe."""
-    return df[df['ligand'].notin(IGNORED_GROUPS_LIST)]
+    return df[~df['ligand'].isin(IGNORED_GROUPS_LIST)]
 
 
 def remove_multichain_pockets(df):
@@ -104,18 +135,10 @@ def filter_valid_ligands(df, path):
        ] = df['apo_query_POI'].str.split('_', expand=True)
 
     # check each ligand in dataset using smiles
-
-    # ignore the P2RANK filtering for now ...
-    # df = remove_ignored_groups(df)
-    # valid_ligands_rmsd_df = df[
-    #     (df['ligand'].isin(valid_ligands_df['#CCD'].values)) &
-    #     (df['ligand'].apply(lambda ligand: check_ligand_atom_count(valid_ligands_df[valid_ligands_df['#CCD'] == ligand]['SMILES'])))]
-
-    # filter only those values not present in BioLIP
-    print(f'All ligands: {len(df)}')
+    df = remove_ignored_groups(df)
     valid_ligands_rmsd_df = df[
-    (df['ligand'].isin(valid_ligands_df['#CCD'].values))]
-    print(f'BIOLIP-only ligands: {len(valid_ligands_rmsd_df)}')
+        (df['ligand'].isin(valid_ligands_df['#CCD'].values)) &
+        (df['ligand'].apply(lambda ligand: check_ligand_atom_count(valid_ligands_df[valid_ligands_df['#CCD'] == ligand]['SMILES'])))]
 
     # save cached results for better performance next time
     with open(cached_smiles_path, 'w') as f:

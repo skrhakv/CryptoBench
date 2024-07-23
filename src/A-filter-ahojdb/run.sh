@@ -2,9 +2,10 @@
 
 # constants
 readonly PYTHON_PATH=/home/vit/miniconda3/bin/activate
-
-readonly OUTPUT_PATH=/home/vit/Projects/cryptobench/data/A-filter-ahojdb-tryout
-readonly INPUT_PATH=/home/vit/Projects/ahoj2-extraction/data/output-newest
+readonly OUTPUT_PATH=/home/vit/Projects/cryptobench/data/A-filter-ahojdb-v2
+# CAUTION: if you have multiple folders (i.e. I got 3 folders - storage1, storage2, storage3),
+# you need to run this for each of these folders separately 
+readonly INPUT_PATH=/home/vit/Projects/cryptobench/data/ahoj-db/storage3/storage/praha1/home/davidhoksza/projects/ahoj/output4
 
 # vars
 BASEDIR=$(realpath $(dirname $0))
@@ -14,7 +15,7 @@ TMP_DIR=$BASEDIR/tmp-data
 deactivate
 source $PYTHON_PATH
 mkdir $TMP_DIR
-# something to untar
+
 for batch_path in $INPUT_PATH/*/; do
     BATCH=${batch_path: -4:-1}
     mkdir $TMP_DIR/$BATCH

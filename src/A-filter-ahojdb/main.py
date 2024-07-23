@@ -7,8 +7,6 @@ import math
 import sys
 sys.path.append('..')
 import pymol_utils
-OUTPUT_PATH = 'output/pairs.csv'
-INPUT_PATH = '/home/vit/Projects/ahoj2-extraction/src/get-pairs/tmp-data/'
 
 MINIMAL_RESOLUTION = 2.5
 
@@ -28,13 +26,6 @@ def main(batch_id, input_path, output_path):
         pocket_selections = pd.read_csv(
             f'{input_path}/{batch_id}-pairs/{filename}/pocket_selections.csv', header=None)
 
-        headers = holo_info.to_dict()
-        d1 = {f'apo_{k}': [] for k, v in headers.items()}
-        d2 = {f'holo_{k}': [] for k, v in headers.items()}
-        apo_holo_pairs = d1 | d2
-        apo_holo_pairs['apo_pocket_selection'] = []
-        apo_holo_pairs['holo_pocket_selection'] = []
-
         # consider holo when there is complete pocket and good resolution
         holo_info['resolution'] = holo_info['resolution'].replace(
             '-', math.inf)
@@ -48,6 +39,14 @@ def main(batch_id, input_path, output_path):
         apo_info = pd.read_csv(
             f'{input_path}/{batch_id}-pairs/{filename}/apo_filtered_sorted_results.csv')
         apo_info['resolution'] = apo_info['resolution'].replace('-', math.inf)
+
+        apo_headers = apo_info.to_dict()
+        holo_headers = holo_info.to_dict()
+        apo_headers = {f'apo_{k}': [] for k, v in apo_headers.items()}
+        holo_headers = {f'holo_{k}': [] for k, v in holo_headers.items()}
+        apo_holo_pairs = apo_headers | holo_headers
+        apo_holo_pairs['apo_pocket_selection'] = []
+        apo_holo_pairs['holo_pocket_selection'] = []
 
         # consider apo where there is complete pocket and good resolution
         apo_info = apo_info[(apo_info['resolution'] < MINIMAL_RESOLUTION) &
