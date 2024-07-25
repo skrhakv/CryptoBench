@@ -61,7 +61,6 @@ def check_ligand_atom_count(smiles):
     for i in str(smiles.values[0]).split(';'):
         i = i.strip()
         if i in cached_smiles.keys():
-            print(f'{i} is in cached_smiles!')
             if cached_smiles[i]:
                 return True
             else:
@@ -96,29 +95,26 @@ def check_ligand_atom_count(smiles):
     return False
 
 
-IGNORED_GROUPS_LIST = ['HOH', 'DOD', 'WAT', 'NAG',
-                       'MAN', 'UNK', 'GLC', 'ABA', 'MPD', 'GOL', 'SO4', 'PO4']
-
-# P2RANK defines a list of ignored groups: (HOH, DOD, WAT, NAG, MAN, UNK, GLC, ABA, MPD, GOL, SO4, PO4)
-# this function removes them from the dataframe
-
+IGNORED_GROUPS_LIST = ['HOH', 'DOD', 'WAT', 'UNK', 'ABA', 'MPD', 'GOL', 'SO4', 'PO4']
 
 def remove_ignored_groups(df):
-    """P2RANK defines a list of ignored groups: (HOH, DOD, WAT, NAG, MAN, UNK, GLC, ABA, MPD, GOL, SO4, PO4). This function removes them from the dataframe."""
+    """P2RANK defines a list of ignored groups: (HOH, DOD, WAT, NAG, MAN, UNK, GLC, ABA, MPD, GOL, SO4, PO4). 
+    However, we would like to keep NAG, GLC, MAN. This function removes the ignored group from the dataframe except for NAG, GLC, MAN."""
     return df[~df['ligand'].isin(IGNORED_GROUPS_LIST)]
 
 
-def remove_multichain_pockets(df):
-    return df[
-        (df['apo_chains3'].str.contains('-') != True) &
-        (df['holo_chains3'].str.contains('-') != True) &
-        (df['apo_UNPs'].str.contains('-') != True) &
-        (df['holo_UNPs'].str.contains('-') != True) &
-        (df['apo_structure'].str.contains('\+') != True) &
-        (df['holo_structure'].str.contains('\+') != True)]
+# def remove_multichain_pockets(df):
+#     return df[
+#         (df['apo_chains3'].str.contains('-') != True) &
+#         (df['holo_chains3'].str.contains('-') != True) &
+#         (df['apo_UNPs'].str.contains('-') != True) &
+#         (df['holo_UNPs'].str.contains('-') != True) &
+#         (df['apo_structure'].str.contains('\+') != True) &
+#         (df['holo_structure'].str.contains('\+') != True)]
 
 
 def filter_valid_ligands(df, path):
+    print('Filter ligands ...')
     cached_smiles.clear()
 
     # read cached smiles
@@ -151,7 +147,9 @@ def filter_valid_ligands(df, path):
 def write_uniprot_ids(filtered_rmsd_df, output_path):
     with open(f'{output_path}/uniprot_ids.txt', 'w') as f:
         for uniprot_id in filtered_rmsd_df['apo_UNPs'].unique():
-            f.write(f'{str(uniprot_id)}\n')
+            ids = str(uniprot_id).split(' ')
+            for i in ids:
+                f.write(f'{i}\n')
 
 
 def download_sequences(path):
@@ -170,6 +168,7 @@ def run_shell_mmseq(path):
 def read_clusters(clusters_filepath):
     print('Read clusters ...')
 
+    seq_id_to_cluster = {}
     clusters = {}
     with open(clusters_filepath, 'r') as csvfile:
         filtered_uniprot_ids = csv.reader(csvfile, delimiter='\t')
@@ -177,7 +176,9 @@ def read_clusters(clusters_filepath):
             if row[0] not in clusters:
                 clusters[row[0]] = []
             clusters[row[0]].append(row[1])
-    return clusters
+            seq_id_to_cluster[row[1]] = row[0]
+
+    return clusters, seq_id_to_cluster
 
 
 def find_highest_cluster_pocket_rmsd_ids(clusters, df):
@@ -247,12 +248,12 @@ def remove_duplicated_pockets(enhanced, clusters):
             for i in range(1, len(value)):
                 duplicates.append((value[i], False))
 
-    remove_duplicates = []
+    remove_duplicates = set()
     for id, pckts in pockets.items():
         for index, item in enumerate(duplicates):
             if not item[1] and item[0] in pckts[0].uniprot_id:
                 duplicates[index] = (duplicates[index][0], True)
-                remove_duplicates.append(id)
+                remove_duplicates.add(id)
     for i in remove_duplicates:
         del pockets[i]
     return pockets
@@ -270,13 +271,13 @@ def save_dataset(pockets, output_path):
                 data[apo_pdb_id] = []
             if FOR_PYMOL:
                 data[apo_pdb_id].append(
-                    {'uniprot_id': p.uniprot_id, 'holo_pdb_id': p.holo_pdb_id, 'holo_chain': p.holo_chain, 'apo_chain': p.chain,
+                    {'uniprot_id': p.uniprot_id.replace(' ', '-'), 'holo_pdb_id': p.holo_pdb_id, 'holo_chain': p.holo_chain, 'apo_chain': p.chain,
                      'ligand': p.ligand, 'ligand_index': p.ligand_index, 'ligand_chain': p.ligand_chain,
                      'apo_pocket_selection': p.get_apo_pocket_definition(), 'holo_pocket_selection': p.get_holo_pocket_definition(),
                      'apo_pymol_selection': p.apo_selection, 'holo_pymol_selection': p.holo_selection})
             else:
                 data[apo_pdb_id].append(
-                    {'uniprot_id': p.uniprot_id, 'holo_pdb_id': p.holo_pdb_id, 'holo_chain': p.holo_chain, 'apo_chain': p.chain,
+                    {'uniprot_id': p.uniprot_id.replace(' ', '-'), 'holo_pdb_id': p.holo_pdb_id, 'holo_chain': p.holo_chain, 'apo_chain': p.chain,
                      'ligand': p.ligand, 'ligand_index': p.ligand_index, 'ligand_chain': p.ligand_chain,
                      'apo_pocket_selection': p.get_apo_pocket_definition(), 'holo_pocket_selection': p.get_holo_pocket_definition()})
 

@@ -23,7 +23,6 @@ def load_ahojdb():
         del ahojdb_df
     else:
         filtered_rmsd_df = pd.read_csv(PREFILTERED_CSV)
-
         
     # filter AHoJ-DB according to the defined thresholds
     filtered_rmsd_df = filter_utils.get_well_defined_pairs(filtered_rmsd_df)
@@ -38,7 +37,7 @@ def main():
     filter_utils.write_uniprot_ids(filtered_rmsd_df, OUTPUT_PATH)
     filter_utils.download_sequences(OUTPUT_PATH)
     filter_utils.run_shell_mmseq(OUTPUT_PATH)
-    clusters = filter_utils.read_clusters(
+    clusters, _ = filter_utils.read_clusters(
         f'{OUTPUT_PATH}/clusterRes_cluster.tsv')
     indices = filter_utils.find_highest_cluster_pocket_rmsd_ids(
         clusters, filtered_rmsd_df)
