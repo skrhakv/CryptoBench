@@ -9,6 +9,7 @@ import filter_utils
 TRAIN_RATIO, TEST_RATIO = 0.8, 0.2
 NUM_OF_FOLDS = 4
 FOLD_RATIO = TRAIN_RATIO / NUM_OF_FOLDS
+MIN_SEQUENCE_IDENTITY = 0.1
 
 OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/D-create-folds/ahoj-v2'
 INPUT_PATH = '/home/vit/Projects/cryptobench/data/C-remove-holo-homomers/ahoj-v2'
@@ -66,18 +67,6 @@ def get_multiple_sequences(dataset):
                 multiple_sequences.add(holo_structure['uniprot_id'])
     return multiple_sequences
 
-# def merge_clusters(clusters, seq_id_to_cluster, main_cluster, others, original_):
-#     main_cluster_id = seq_id_to_cluster[main_cluster]
-#     seq_id_to_cluster[mult_sequence] = main_cluster_id
-#     clusters[main_cluster_id].append(mult_sequence)
-#     for other in others:
-#         other_id = seq_id_to_cluster[other]
-#         extending_array = clusters[other_id]
-#         clusters[main_cluster_id].extend(extending_array)
-#         del clusters[other_id]
-#         for i in extending_array:
-#             seq_id_to_cluster[i] = main_cluster_id
-
 def merge_clusters_with_multiple_sequence_structures(clusters, seq_id_to_cluster, multiple_sequences):
     print('Merge clusters with multiple sequence structures ...')
 
@@ -118,8 +107,7 @@ def assign_structures_to_folds(dataset, clusters, uniprot_to_pdb):
             if uniprot_id not in uniprot_to_pdb:
                 continue
             pdb_id = uniprot_to_pdb[uniprot_id]
-            if pdb_id == '1fzc':
-                print(f'what {fold}')
+
             if fold == -1:
                 if pdb_id not in test:
                     test[pdb_id] = dataset[pdb_id] 
@@ -129,7 +117,14 @@ def assign_structures_to_folds(dataset, clusters, uniprot_to_pdb):
     
     # sanity check: sum of structures in TRAIN + TEST equals the length of the whole dataset 
     fold_sum = sum([len(i) for i in train]) + len(test)
-    assert fold_sum == len(dataset)
+    # for key in dataset.keys():
+    #     if key not in test.keys():
+    #         is_in_train = False
+    #         for i in train:
+    #             if key in i.keys():
+    #                 is_in_train = True
+    #         if not is_in_train: print(key)
+    assert fold_sum == len(dataset), f'{fold_sum}, {len(dataset)}'
 
     return train, test
 
@@ -159,13 +154,15 @@ def check_structures_assigned_to_multiple_uniprot_ids(uniprot_to_pdb_mapping, cl
 
             assert seq_id_to_cluster[uniprot_id1] == seq_id_to_cluster[uniprot_id2], f'{pdb_id}, {uniprot_id1}, {uniprot_id2}' 
 
-def save_dataset(train, test):
+def save_dataset(train, test, dataset):
     print('Save dataset ...')
     with open(f'{OUTPUT_PATH}/cryptobench/folds/test.json', 'w', encoding='utf-8') as f:
         json.dump(test, f, ensure_ascii=False, indent=4)
     for i in range(NUM_OF_FOLDS):
         with open(f'{OUTPUT_PATH}/cryptobench/folds/train-fold-{i}.json', 'w', encoding='utf-8') as f:
             json.dump(train[i], f, ensure_ascii=False, indent=4)
+    with open(f'{OUTPUT_PATH}/cryptobench/dataset.json', 'w', encoding='utf-8') as f:
+        json.dump(dataset, f, ensure_ascii=False, indent=4)
 
     splits = {}
     splits['test'] = list(test.keys())
@@ -180,9 +177,9 @@ def main():
     copy_shell_scripts()
 
     uniprot_to_pdb_mapping = get_uniprot_to_pdb_mapping(dataset)
-    # write_uniprot_ids_to_file(dataset)
-    # filter_utils.download_sequences(OUTPUT_PATH)
-    # filter_utils.run_shell_mmseq(OUTPUT_PATH)
+    write_uniprot_ids_to_file(dataset)
+    filter_utils.download_sequences(OUTPUT_PATH)
+    filter_utils.run_shell_mmseq(OUTPUT_PATH, MIN_SEQUENCE_IDENTITY)
     multiple_sequences = get_multiple_sequences(dataset)
     clusters, seq_id_to_cluster = filter_utils.read_clusters(f'{OUTPUT_PATH}/clusterRes_cluster.tsv')
     clusters = merge_clusters_with_multiple_sequence_structures(clusters, seq_id_to_cluster, multiple_sequences)
@@ -190,7 +187,7 @@ def main():
     # some PDB IDs might be assigned to multiple sequences! therefore it is necessary to merge those clusters together
     check_structures_assigned_to_multiple_uniprot_ids(uniprot_to_pdb_mapping, clusters, seq_id_to_cluster)
     train, test = assign_structures_to_folds(dataset, clusters, uniprot_to_pdb_mapping)
-    save_dataset(train, test)
+    save_dataset(train, test, dataset)
 
 if __name__ == '__main__':
     main()

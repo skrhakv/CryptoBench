@@ -9,15 +9,24 @@ CIF_FILES_PATH = '/home/vit/Projects/deeplife-project/data/cif_files'
 OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/C-remove-holo-homomers/ahoj-v2'
 INPUT_PATH = '/home/vit/Projects/cryptobench/data/B-create-dataset/ahoj-v2'
 
+def do_correction(dataset):
+    """Some Ids got outdated. Let's updated them"""
+    for apo_pdb_id, holo_structures in dataset.items():
+        for i, holo_structure in enumerate(holo_structures):
+            if holo_structure['uniprot_id'] == 'O36607':
+                dataset[apo_pdb_id][i]['uniprot_id'] = 'Q2HRB6'
+    return dataset
 
 def main():
     with open(f'{INPUT_PATH}/dataset.json') as f:
         dataset = json.load(f)
 
+    dataset = do_correction(dataset)
+
     dataset_without_homomers = {}
     counter = 0
     for apo_pdb_id, holo_structures in dataset.items():
-        holo_ids_to_be_removed = set()
+        dataset_without_homomers[apo_pdb_id] = []
         for _, holo_group in itertools.groupby(holo_structures, key=lambda row: [set(row['apo_pocket_selection']), row['holo_pdb_id'], row['ligand']]):
             holo_group = list(holo_group)
 
@@ -31,7 +40,7 @@ def main():
                 # get chains from the group:
                 group_chains = []
                 for holo_structure in holo_group:
-                    group_chains.append(holo_structure['holo_chain'])
+                    group_chains.append(holo_structure['holo_chain'].split('-'))
 
                 # load sequences
                 cif_file_path = rcsb.fetch(
@@ -41,8 +50,10 @@ def main():
                     cif_file[holo_pdb_id.upper()]['entity_poly'].values())]
                 structure_sequences_chains = structure_sequences[6]
 
+                # add the first item because we are sure that it doesn't have homomeric duplicate as there is no such structure yet
+                dataset_without_homomers[apo_pdb_id].append(holo_group[0])
                 # if any pair of group_chains items has the same sequence then it is homomeric and one of them can be deleted
-                is_homomeric_idx = [] 
+                is_homomeric_idx = []
                 for i, pair_item1 in enumerate(group_chains):
                     for ii, pair_item2 in enumerate(group_chains):
                         # these pairs were already checked, skip those:
@@ -52,31 +63,38 @@ def main():
                         if i in is_homomeric_idx or ii in is_homomeric_idx:
                             continue
 
-                        for homomer_chains in structure_sequences_chains: 
-                            homomer_chains = set(homomer_chains.split(','))
-                            if pair_item1 in homomer_chains and pair_item2 in homomer_chains:
-                                is_homomeric_idx.append(ii)
+                        # check each position in multichain structures
+                        is_every_chain_in_multichain_homomeric = True
+                        for multichain_index in range(len(pair_item1)):
+                            is_this_position_homomeric = False
+                            # check each homomer set whether each chain at particular position belongs to that homomer
+                            for homomer_chains in structure_sequences_chains: 
+                                homomer_chains = set(homomer_chains.split(','))
+                                if pair_item1[multichain_index] in homomer_chains and pair_item2[multichain_index] in homomer_chains:
+                                    is_this_position_homomeric = True
+
+                            # the position was not homomeric
+                            if not is_this_position_homomeric:
+                                is_every_chain_in_multichain_homomeric = False
+                                break
+                        
+                        # this record doesn't have (yet) homomeric duplicate
+                        if not is_every_chain_in_multichain_homomeric:            
+                            dataset_without_homomers[apo_pdb_id].append(holo_group[ii])
+                        else: 
+                            is_homomeric_idx.append(ii)
 
                 print(f'Group chains: {group_chains}')
                 print(f'Homomers: {structure_sequences_chains}')
                 print(f'Identified homomers: {[group_chains[i] for i in is_homomeric_idx]}')
-
-                for i in is_homomeric_idx:
-                    holo_ids_to_be_removed.add(f'{holo_pdb_id}{group_chains[i]}')
-        dataset_without_homomers[apo_pdb_id] = []
-        for holo_structure in dataset[apo_pdb_id]:
-            if f'{holo_structure["holo_pdb_id"]}{holo_structure["holo_chain"]}' in holo_ids_to_be_removed:
-                continue
             else:
-                dataset_without_homomers[apo_pdb_id].append(holo_structure)
+                dataset_without_homomers[apo_pdb_id].append(holo_group[0])
 
         counter += 1
 
         if counter % 100:
             with open(f'{OUTPUT_PATH}/dataset.json', 'w', encoding='utf-8') as f:
-                json.dump(dataset_without_homomers, f, ensure_ascii=False, indent=4)
-
-        
+                json.dump(dataset_without_homomers, f, ensure_ascii=False, indent=4)        
 
 
 if __name__ == '__main__':

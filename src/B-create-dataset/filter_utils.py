@@ -29,9 +29,8 @@ MIN_ROG_PERCENTAGE = 0.8
 MAX_ROG_PERCENTAGE = 1.2
 MIN_SEQUENCE_LENGTH = 50
 
-def get_well_defined_pairs(df, sequence_length_filter=True):
-    if sequence_length_filter:
-        return df[(df['apo_tm_score'] > MIN_TM_SCORE) &
+def get_well_defined_pairs(df):
+    return df[(df['apo_tm_score'] > MIN_TM_SCORE) &
                          (df['apo_tm_score_i'] > MIN_TM_SCORE) &
                          (df['apo_pocket_dist'] < MAX_POCKET_DISTANCE) &
                          (df['apo_RoG'] * MAX_ROG_PERCENTAGE > df['holo_RoG']) &
@@ -41,15 +40,6 @@ def get_well_defined_pairs(df, sequence_length_filter=True):
                          # check that each sequence comply the MIN_SEQUENCE_LENGTH requirement
                          (df['apo_UNPovrlp_obs'] > MIN_SEQUENCE_LENGTH)]
                          # (df['apo_sequence_length'].apply(lambda sequence_lengths: all(int(i) > MIN_SEQUENCE_LENGTH for i in str(sequence_lengths).split('_'))))]
-    else:
-        return df[(df['apo_tm_score'] > MIN_TM_SCORE) &
-                         (df['apo_tm_score_i'] > MIN_TM_SCORE) &
-                         (df['apo_pocket_dist'] < MAX_POCKET_DISTANCE) &
-                         (df['apo_RoG'] * MAX_ROG_PERCENTAGE > df['holo_RoG']) &
-                         (df['apo_RoG'] * MIN_ROG_PERCENTAGE < df['holo_RoG']) &
-                         (df['holo_RoG'] * MAX_ROG_PERCENTAGE > df['apo_RoG']) &
-                         (df['holo_RoG'] * MIN_ROG_PERCENTAGE < df['apo_RoG'])]
-
 
 def check_ligand_atom_count(smiles):
     # TODO: switch for p2rank-based filtering:
@@ -114,7 +104,7 @@ def remove_ignored_groups(df):
 
 
 def filter_valid_ligands(df, path):
-    print('Filter ligands ...')
+    # print('Filter ligands ...')
     cached_smiles.clear()
 
     # read cached smiles
@@ -132,7 +122,7 @@ def filter_valid_ligands(df, path):
 
     # check each ligand in dataset using smiles
     df = remove_ignored_groups(df)
-    valid_ligands_rmsd_df = df[
+    filtered_df = df[
         (df['ligand'].isin(valid_ligands_df['#CCD'].values)) &
         (df['ligand'].apply(lambda ligand: check_ligand_atom_count(valid_ligands_df[valid_ligands_df['#CCD'] == ligand]['SMILES'])))]
 
@@ -141,7 +131,7 @@ def filter_valid_ligands(df, path):
         for key, value in cached_smiles.items():
             f.write(f"{key.strip()};{value}\n")
 
-    return valid_ligands_rmsd_df
+    return filtered_df
 
 
 def write_uniprot_ids(filtered_rmsd_df, output_path):
@@ -159,10 +149,10 @@ def download_sequences(path):
     subprocess.call(['sh', './download-sequences.sh', path])
 
 
-def run_shell_mmseq(path):
+def run_shell_mmseq(path, min_seq_identity=0.4):
     """Runs mmseqs2 in shell"""
     print('Run mmseqs ...')
-    subprocess.call(['sh', './run-mmseq.sh', path])
+    subprocess.call(['sh', './run-mmseq.sh', path, str(min_seq_identity)])
 
 
 def read_clusters(clusters_filepath):
@@ -227,15 +217,20 @@ def remove_duplicated_pockets(enhanced, clusters):
     pockets: dict[tuple[str, str], list[pocket.pocket]] = {}
 
     used_keys = set()
+    
+    # for each group (group=pdb_id + chain_id) parse its pocket
     for key, item in grouped_df:
         group = grouped_df.get_group(key)
+
+        # merge multichain entries with their singlechain subsets
         if '-' in key[1]:
             for i in key[1].split('-'):
                 new_key = (key[0], i)
                 if new_key in grouped_df.groups.keys():
                     group = pd.concat([group, grouped_df.get_group(new_key)])
                     used_keys.add(new_key)
-
+        
+        # parse
         pdb_id, pockets_for_this_pdb_id = parser.parse_pocket_selections(group)
         pockets[key] = pockets_for_this_pdb_id
 
@@ -259,7 +254,7 @@ def remove_duplicated_pockets(enhanced, clusters):
     return pockets
 
 
-def save_dataset(pockets, output_path):
+def save_dataset(pockets, output_path, filename='dataset.json'):
     print('Save the dataset ...')
 
     FOR_PYMOL = True
@@ -280,8 +275,6 @@ def save_dataset(pockets, output_path):
                     {'uniprot_id': p.uniprot_id.replace(' ', '-'), 'holo_pdb_id': p.holo_pdb_id, 'holo_chain': p.holo_chain, 'apo_chain': p.chain,
                      'ligand': p.ligand, 'ligand_index': p.ligand_index, 'ligand_chain': p.ligand_chain,
                      'apo_pocket_selection': p.get_apo_pocket_definition(), 'holo_pocket_selection': p.get_holo_pocket_definition()})
-
-    filename = 'dataset.json'
 
     with open(f'{output_path}/{filename}', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)

@@ -47,7 +47,6 @@ class pocket_selection_parser:
             self.__get_chain_definition(p, single_chain_selection, 'holo')
         return p
 
-# 5nzm and ( (chain A and resi 81+82+83+84+95+130+162+188+189+190+191+219+220+221+256+257+282+284+305+306+307+308+355+376+378+380) )
     def __get_chain_definition(self, p: pocket, selection: str, apo_holo):
         selection = selection.replace('(', '').replace(')', '').strip()
         chain_definition = selection.split(' and ')[0].strip()
