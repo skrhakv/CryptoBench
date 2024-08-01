@@ -2,6 +2,7 @@ import pandas as pd
 import sys
 import json
 import pickle
+import shutil
 
 sys.path.append('../B-create-dataset')
 import filter_utils
@@ -13,8 +14,8 @@ import filter_utils
 LIGANDS_DATA_PATH = '../../data/B-create-dataset/ahoj-v2'
 DATASET_PATH = '../../data/C-remove-holo-homomers/ahoj-v2'
 AHOJ_DB_PATH = '../../data/A-filter-ahojdb-v2/pairs.csv'
-OUTPUT_PATH = '../../data/E-add-noncryptic-pockets/ahoj-v2'
-NON_CRYPTIC_DS_PATH = f'{OUTPUT_PATH}/cryptobench/additional_data/non_cryptic_pockets'
+OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/E-add-noncryptic-pockets/ahoj-v2'
+NON_CRYPTIC_DS_PATH = f'{OUTPUT_PATH}/cryptobench/auxiliary-data/non-cryptic-pockets'
 
 def find_additional_noncryptic_pockets(df, apo_pdb_id, apo_chain_id):
     additional_noncryptic = df[(df['apo_structure'] == apo_pdb_id) & (df['apo_chains3'] == apo_chain_id)]
@@ -39,8 +40,8 @@ def concat_pd(pd1, pd2):
 
 
 def check_final_dataset():
-    """Sanity check that every key in noncryptic_pockets.json is present in dataset.json"""
-    with open(f'{NON_CRYPTIC_DS_PATH}/noncryptic_pockets.json') as f:
+    """Sanity check that every key in noncryptic-pockets.json is present in dataset.json"""
+    with open(f'{NON_CRYPTIC_DS_PATH}/noncryptic-pockets.json') as f:
         noncryptic = json.load(f)
 
     with open(f'{DATASET_PATH}/dataset.json') as f:
@@ -93,8 +94,11 @@ def main():
         else: parsed_additional_pockets[id] = []
 
     # save the dataset
-    filter_utils.save_dataset(parsed_additional_pockets, NON_CRYPTIC_DS_PATH, 'noncryptic_pockets.json')
+    filter_utils.save_dataset(parsed_additional_pockets, NON_CRYPTIC_DS_PATH, 'noncryptic-pockets.json')
     check_final_dataset()
+
+    # copy README.md to the cryptobench folder
+    shutil.copy('../README.md', f'{OUTPUT_PATH}/cryptobench')
     
 if __name__ == '__main__':
     main()

@@ -104,7 +104,7 @@ def remove_ignored_groups(df):
 
 
 def filter_valid_ligands(df, path):
-    # print('Filter ligands ...')
+    print('Filter ligands ...')
     cached_smiles.clear()
 
     # read cached smiles
