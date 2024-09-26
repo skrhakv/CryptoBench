@@ -267,13 +267,13 @@ def save_dataset(pockets, output_path, filename='dataset.json'):
             if FOR_PYMOL:
                 data[apo_pdb_id].append(
                     {'uniprot_id': p.uniprot_id.replace(' ', '-'), 'holo_pdb_id': p.holo_pdb_id, 'holo_chain': p.holo_chain, 'apo_chain': p.chain,
-                     'ligand': p.ligand, 'ligand_index': p.ligand_index, 'ligand_chain': p.ligand_chain,
+                     'ligand': p.ligand, 'ligand_index': p.ligand_index, 'ligand_chain': p.ligand_chain, 'pRMSD': p.pocket_rmsd,
                      'apo_pocket_selection': p.get_apo_pocket_definition(), 'holo_pocket_selection': p.get_holo_pocket_definition(),
                      'apo_pymol_selection': p.apo_selection, 'holo_pymol_selection': p.holo_selection})
             else:
                 data[apo_pdb_id].append(
                     {'uniprot_id': p.uniprot_id.replace(' ', '-'), 'holo_pdb_id': p.holo_pdb_id, 'holo_chain': p.holo_chain, 'apo_chain': p.chain,
-                     'ligand': p.ligand, 'ligand_index': p.ligand_index, 'ligand_chain': p.ligand_chain,
+                     'ligand': p.ligand, 'ligand_index': p.ligand_index, 'ligand_chain': p.ligand_chain, 'pRMSD': p.pocket_rmsd,
                      'apo_pocket_selection': p.get_apo_pocket_definition(), 'holo_pocket_selection': p.get_holo_pocket_definition()})
 
     with open(f'{output_path}/{filename}', 'w', encoding='utf-8') as f:

@@ -6,8 +6,14 @@ from biotite.structure.io.pdbx import get_sequence
 import biotite.structure.io.pdbx as pdbx
 
 CIF_FILES_PATH = '/home/vit/Projects/deeplife-project/data/cif_files'
-OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/C-remove-holo-homomers/ahoj-v2'
-INPUT_PATH = '/home/vit/Projects/cryptobench/data/B-create-dataset/ahoj-v2'
+COMPUTE_FOR_CRYPTIC = False
+
+if COMPUTE_FOR_CRYPTIC:
+    OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/C-remove-holo-homomers/ahoj-v2'
+    INPUT_PATH = '/home/vit/Projects/cryptobench/data/B-create-dataset/ahoj-v2'
+else:
+    OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/E-add-noncryptic-pockets/ahoj-v2/cryptobench/auxiliary-data/non-cryptic-pockets'
+    INPUT_PATH = OUTPUT_PATH
 
 def do_correction(dataset):
     """Some Ids got outdated. Let's updated them"""
@@ -18,13 +24,19 @@ def do_correction(dataset):
     return dataset
 
 def main():
-    with open(f'{INPUT_PATH}/dataset.json') as f:
+    if COMPUTE_FOR_CRYPTIC:
+        file = 'dataset.json'
+    else:
+        file = 'noncryptic-pockets.json'
+    
+    with open(f'{INPUT_PATH}/{file}') as f:
         dataset = json.load(f)
 
     dataset = do_correction(dataset)
 
     dataset_without_homomers = {}
     counter = 0
+    identified_homomers = 0
     for apo_pdb_id, holo_structures in dataset.items():
         dataset_without_homomers[apo_pdb_id] = []
         for _, holo_group in itertools.groupby(holo_structures, key=lambda row: [set(row['apo_pocket_selection']), row['holo_pdb_id'], row['ligand']]):
@@ -87,15 +99,16 @@ def main():
                 print(f'Group chains: {group_chains}')
                 print(f'Homomers: {structure_sequences_chains}')
                 print(f'Identified homomers: {[group_chains[i] for i in is_homomeric_idx]}')
+                identified_homomers += len([group_chains[i] for i in is_homomeric_idx])
             else:
                 dataset_without_homomers[apo_pdb_id].append(holo_group[0])
 
         counter += 1
 
         if counter % 100:
-            with open(f'{OUTPUT_PATH}/dataset.json', 'w', encoding='utf-8') as f:
+            with open(f'{OUTPUT_PATH}/{file}', 'w', encoding='utf-8') as f:
                 json.dump(dataset_without_homomers, f, ensure_ascii=False, indent=4)        
-
+    print(f'total of identified homomers: {identified_homomers}')
 
 if __name__ == '__main__':
     main()
