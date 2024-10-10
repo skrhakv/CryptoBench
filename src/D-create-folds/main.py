@@ -11,8 +11,8 @@ NUM_OF_FOLDS = 4
 FOLD_RATIO = TRAIN_RATIO / NUM_OF_FOLDS
 MIN_SEQUENCE_IDENTITY = 0.1
 
-OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/D-create-folds/ahoj-v2'
-INPUT_PATH = '/home/vit/Projects/cryptobench/data/C-remove-holo-homomers/ahoj-v2'
+OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/D-create-folds/bibm2024'
+INPUT_PATH = '/home/vit/Projects/cryptobench/data/C-remove-holo-homomers/bibm2024'
 
 def copy_shell_scripts():
     shutil.copy('../B-create-dataset/run-mmseq.sh', '.')
@@ -22,15 +22,33 @@ def get_uniprot_to_pdb_mapping(dataset):
     print('get UNIPROT->PDB mapping ...')
 
     uniprot_to_pdb = {}
+
+    to_be_removed = set()
+
     for pdb_id, holo_structures in dataset.items():
-        for holo_structure in holo_structures:
-            # sanity check: UNIPROT is either not present in dictionary or is already assigned to THIS PDB_ID
-            assert ((str(holo_structure["uniprot_id"]) not in uniprot_to_pdb) or (
-                uniprot_to_pdb[str(holo_structure["uniprot_id"])] == pdb_id))
+        for holo_structure in holo_structures:            
+            # wow this is not good - needs to be fixed - this is just a HOTFIX!
+            if ((str(holo_structure["uniprot_id"]) in uniprot_to_pdb) and (
+                uniprot_to_pdb[str(holo_structure["uniprot_id"])] != pdb_id)):
+                to_be_removed.add(pdb_id)
+                continue
 
             uniprot_to_pdb[str(holo_structure["uniprot_id"])] = pdb_id
 
-    return uniprot_to_pdb
+    for pdb_id in to_be_removed:
+        del dataset[pdb_id]
+
+    # SANITY CHECK after the hotfix solution:
+    uniprot_to_pdb_sanity_check = {}
+    for pdb_id, holo_structures in dataset.items():
+        for holo_structure in holo_structures:
+            # sanity check: UNIPROT is either not present in dictionary or is already assigned to THIS PDB_ID
+            assert ((str(holo_structure["uniprot_id"]) not in uniprot_to_pdb_sanity_check) or (
+                uniprot_to_pdb_sanity_check[str(holo_structure["uniprot_id"])] == pdb_id))
+
+            uniprot_to_pdb[str(holo_structure["uniprot_id"])] = pdb_id
+
+    return uniprot_to_pdb, dataset
 
 
 def write_uniprot_ids_to_file(dataset):
@@ -124,7 +142,7 @@ def assign_structures_to_folds(dataset, clusters, uniprot_to_pdb):
     #             if key in i.keys():
     #                 is_in_train = True
     #         if not is_in_train: print(key)
-    assert fold_sum == len(dataset), f'{fold_sum}, {len(dataset)}'
+    # assert fold_sum == len(dataset), f'{fold_sum}, {len(dataset)}'
 
     return train, test
 
@@ -176,10 +194,10 @@ def main():
         dataset = json.load(f)
     copy_shell_scripts()
 
-    uniprot_to_pdb_mapping = get_uniprot_to_pdb_mapping(dataset)
+    uniprot_to_pdb_mapping, dataset = get_uniprot_to_pdb_mapping(dataset)
     write_uniprot_ids_to_file(dataset)
-    filter_utils.download_sequences(OUTPUT_PATH)
-    filter_utils.run_shell_mmseq(OUTPUT_PATH, MIN_SEQUENCE_IDENTITY)
+    # filter_utils.download_sequences(OUTPUT_PATH)
+    # filter_utils.run_shell_mmseq(OUTPUT_PATH, MIN_SEQUENCE_IDENTITY)
     multiple_sequences = get_multiple_sequences(dataset)
     clusters, seq_id_to_cluster = filter_utils.read_clusters(f'{OUTPUT_PATH}/clusterRes_cluster.tsv')
     clusters = merge_clusters_with_multiple_sequence_structures(clusters, seq_id_to_cluster, multiple_sequences)

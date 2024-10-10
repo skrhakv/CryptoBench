@@ -20,7 +20,7 @@ class pocket_selection_parser:
             apo_holo_pairs['ligand_chain']))
         pockets: [pocket] = []
         for ligand, selection, pocket_rmsd, holo_pdb_id, chain, holo_chain, uniprot_id, holo_selection, ligand_index, ligand_chain in selections:
-            pockets.append(self.__get_pocket_definition(ligand, selection, int(
+            pockets.append(self.__get_pocket_definition(ligand, selection, float(
                 pocket_rmsd), holo_pdb_id, chain, holo_chain, uniprot_id, holo_selection, ligand_index, ligand_chain))
         return pockets[0].pdb_id, pockets
 

@@ -6,14 +6,8 @@ from biotite.structure.io.pdbx import get_sequence
 import biotite.structure.io.pdbx as pdbx
 
 CIF_FILES_PATH = '/home/vit/Projects/deeplife-project/data/cif_files'
-COMPUTE_FOR_CRYPTIC = False
-
-if COMPUTE_FOR_CRYPTIC:
-    OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/C-remove-holo-homomers/ahoj-v2'
-    INPUT_PATH = '/home/vit/Projects/cryptobench/data/B-create-dataset/ahoj-v2'
-else:
-    OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/E-add-noncryptic-pockets/ahoj-v2/cryptobench/auxiliary-data/non-cryptic-pockets'
-    INPUT_PATH = OUTPUT_PATH
+OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/C-remove-holo-homomers/bibm2024'
+INPUT_PATH = '/home/vit/Projects/cryptobench/data/B-create-dataset/bibm2024'
 
 def do_correction(dataset):
     """Some Ids got outdated. Let's updated them"""
@@ -24,10 +18,7 @@ def do_correction(dataset):
     return dataset
 
 def main():
-    if COMPUTE_FOR_CRYPTIC:
-        file = 'dataset.json'
-    else:
-        file = 'noncryptic-pockets.json'
+    file = 'dataset.json'
     
     with open(f'{INPUT_PATH}/{file}') as f:
         dataset = json.load(f)
@@ -58,8 +49,11 @@ def main():
                 cif_file_path = rcsb.fetch(
                     holo_pdb_id, "cif", CIF_FILES_PATH)
                 cif_file = pdbx.CIFFile.read(cif_file_path)
-                structure_sequences = [i.as_array() for i in list(
-                    cif_file[holo_pdb_id.upper()]['entity_poly'].values())]
+                try:
+                    structure_sequences = [i.as_array() for i in list(
+                        cif_file[holo_pdb_id.upper()]['entity_poly'].values())]
+                except:
+                    continue
                 structure_sequences_chains = structure_sequences[6]
 
                 # add the first item because we are sure that it doesn't have homomeric duplicate as there is no such structure yet

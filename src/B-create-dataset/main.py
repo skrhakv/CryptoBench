@@ -5,7 +5,7 @@ import os
 
 INPUT_PATH = '../../data/A-filter-ahojdb-v2'
 INPUT_CSV = f'{INPUT_PATH}/pairs.csv'
-OUTPUT_PATH = '../../data/B-create-dataset/ahoj-v2'
+OUTPUT_PATH = '../../data/B-create-dataset/bibm2024'
 
 PREFILTERED_CSV = f'{OUTPUT_PATH}/filtered_rmsd.csv'
 DATASET_DATAFRAME = f'{OUTPUT_PATH}/dataset_dataframe.csv'
@@ -14,11 +14,10 @@ DATASET_DATAFRAME = f'{OUTPUT_PATH}/dataset_dataframe.csv'
 def load_ahojdb():
     print('Load AHoJ-DB ...')
 
-    # CAUTION: you might need to run a script from the /home/skrhakv/sequence-lengths-for-cryptobench to add the information about sequence length
     if not os.path.exists(PREFILTERED_CSV):
         ahojdb_df = pd.read_csv(INPUT_CSV)
         filtered_rmsd_df = ahojdb_df[(
-            ahojdb_df['apo_pocket_rms'] > filter_utils.MAX_POCKET_RMSD)]
+            ahojdb_df['apo_pocket_rms'] < filter_utils.MAX_POCKET_RMSD)]
         filtered_rmsd_df.to_csv(PREFILTERED_CSV)
         del ahojdb_df
     else:
@@ -26,7 +25,7 @@ def load_ahojdb():
         
     # filter AHoJ-DB according to the defined thresholds
     filtered_rmsd_df = filter_utils.get_well_defined_pairs(filtered_rmsd_df)
-    filtered_rmsd_df = filtered_rmsd_df[(filtered_rmsd_df['apo_pocket_rms'] > filter_utils.MAX_POCKET_RMSD)]
+    filtered_rmsd_df = filtered_rmsd_df[(filtered_rmsd_df['apo_pocket_rms'] < filter_utils.MAX_POCKET_RMSD)]
     return filtered_rmsd_df
 
 
