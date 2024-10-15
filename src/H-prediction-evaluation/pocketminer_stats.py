@@ -12,11 +12,16 @@ import biotite.structure as struc
 from biotite.sequence import ProteinSequence
 
 TEST_SUBSET_PATH = '/home/vit/Projects/cryptobench/data/G-download-uniprot-sequences-and-create-annotations/ahoj-v2/create-annotations/test.csv'
-PDB_FILES = '/home/vit/Projects/cryptobench/data/H-prediction-evaluation/ahoj-v2/pdb-cryptobench-v2-test-subset'
+VALIDATION_SUBSET_PATH = '/home/vit/Projects/cryptobench/data/G-download-uniprot-sequences-and-create-annotations/ahoj-v2/create-annotations/train-fold-0.csv'
+
 OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/H-prediction-evaluation/ahoj-v2/pocketminer'
 STATS_OUTPUT_PATH = f'{OUTPUT_PATH}/pocketminer-stats'
-PDB_FILES = f'{OUTPUT_PATH}/pdb-cryptobench-v2-test-subset'
+
+TEST_PDB_FILES = f'{OUTPUT_PATH}/pdb-cryptobench-v2-test-subset'
+VALIDATION_PDB_FILES = f'{OUTPUT_PATH}/pdb-cryptobench-v2-fold-0'
+
 POCKETMINER_PREDICTIONS_PATH = f'{OUTPUT_PATH}/pocketminer-predictions'
+POCKETMINER_VALIDATION_PREDICTIONS_PATH = f'{OUTPUT_PATH}/pocketminer-validation-predictions'
 THRESHOLD = 0.75
 
 mapping = {'Aba': 'A', 'Ace': 'X', 'Acr': 'X', 'Ala': 'A', 'Aly': 'K', 'Arg': 'R', 'Asn': 'N', 'Asp': 'D', 'Cas': 'C',
@@ -62,7 +67,7 @@ class Results:
         return metrics.matthews_corrcoef(self.predictions, self.actual_values)
 
     def get_f1(self):
-        return metrics.f1_score(self.predictions, self.actual_values)
+        return metrics.f1_score(self.predictions, self.actual_values, average='weighted')
 
     def satisfies_treshold(self, treshold_percent):
         return (metrics.confusion_matrix(self.predictions, self.actual_values)[1][1] / np.sum(self.actual_values) >= treshold_percent)
@@ -85,11 +90,11 @@ class Results:
 
 skipped_structures = []
 
-def read_predictions() -> Dict[str, Results]:
+def read_predictions(predictions_path, subset_path, pdb_files, threshold=0.5) -> Dict[str, Results]:
     result = {}
 
     # using auth_seq_id annotations for the residue numbers and auth_chain_id for the chains
-    with open(TEST_SUBSET_PATH, 'r') as csvfile:
+    with open(subset_path, 'r') as csvfile:
         reader = csv.reader(csvfile, delimiter=';')
         for row in reader:
             pdb_id = row[0].lower()
@@ -98,24 +103,24 @@ def read_predictions() -> Dict[str, Results]:
 
             id = f'{pdb_id}{chain_id}'
 
-            if not os.path.exists(f'{POCKETMINER_PREDICTIONS_PATH}/{pdb_id}{chain_id}.npy'):
+            if not os.path.exists(f'{predictions_path}/{pdb_id}{chain_id}.npy'):
                 skipped_structures.append(id)
                 print(id)
                 continue
+            if pdb_id == '7qni': continue
 
             predictions = np.load(
-                f'{POCKETMINER_PREDICTIONS_PATH}/{pdb_id}{chain_id}.npy')[0]
+                f'{predictions_path}/{pdb_id}{chain_id}.npy')[0]
             pred_for_auc = np.load(
-                f'{POCKETMINER_PREDICTIONS_PATH}/{pdb_id}{chain_id}.npy')[0]
+                f'{predictions_path}/{pdb_id}{chain_id}.npy')[0]
             tmp = predictions
-            predictions[tmp > THRESHOLD] = 1
-            predictions[tmp <= THRESHOLD] = 0
+            predictions[tmp > threshold] = 1
+            predictions[tmp <= threshold] = 0
 
             annotations_set = set([i.split('_')[1] for i in annotations.split(' ')])
-            # aa_names = {int(i[1:]): i[:1] for i in annotations.split(' ')}
 
             cif_file = pdb.PDBFile.read(
-                f'{PDB_FILES}/{pdb_id}{chain_id}.pdb')
+                f'{pdb_files}/{pdb_id}{chain_id}.pdb')
             whole_structure = pdb.get_structure(cif_file, model=1)
             protein = whole_structure[struc.filter_amino_acids(
                 whole_structure)]
@@ -137,7 +142,7 @@ def read_predictions() -> Dict[str, Results]:
             if id == '7nbc':
                 chain_id = 'CCC'
             # check that all binding residues are observed 
-            assert sum(y) == len(annotations_set)
+            assert sum(y) == len(annotations_set), pdb_id
             result[f'{pdb_id}{chain_id}'] = Results(
                 y, predictions, pred_for_auc, f'{pdb_id}{chain_id}')
 
@@ -201,8 +206,37 @@ def save_to_csv(result_list: Dict[str, Results], path):
             avg_tpr), statistics.stdev(avg_acc), statistics.stdev(avg_mcc), statistics.stdev(avg_f1), statistics.stdev(avg_auc), statistics.stdev(avg_auprc)])
         writer.writerow(["overall", overall_predictions.shape[0], sum(overall.actual_values), overall.get_FPR(), overall.get_TPR(),overall.accuracy, overall.mcc, overall.f1, overall.auc, overall.get_auprc() ])
 
+def to_labels(pos_probs, threshold):
+    return (pos_probs >= threshold).astype('int')
+
+def get_optimal_decision_threshold():
+    result_list = read_predictions(POCKETMINER_VALIDATION_PREDICTIONS_PATH, VALIDATION_SUBSET_PATH, VALIDATION_PDB_FILES)
+    for protein in result_list.values():
+        overall_probs = None
+        overall_actual = None
+
+        if overall_probs is None:
+            overall_probs = protein.predictions_for_auc
+            overall_actual = protein.actual_values
+        else:
+            overall_probs = np.concatenate((overall_probs, protein.predictions_for_auc), axis=0)
+            overall_actual = np.concatenate((overall_actual, protein.actual_values), axis=0)
+        
+    thresholds = np.arange(0, 1, 0.05)
+        
+    fpr, tpr, thresholds = metrics.roc_curve(overall_actual, overall_probs)
+    print(thresholds)
+    scores = [metrics.f1_score(overall_actual, to_labels(overall_probs, t), average='weighted') for t in thresholds]
+    # get the best threshold
+    J = tpr + scores - fpr
+    ix = np.argmax(J)
+    print('Threshold=%.3f' % (thresholds[ix]))
+    return thresholds[ix]
+
 if __name__ == '__main__':
-    test_set = read_predictions()   
+    threshold = get_optimal_decision_threshold()
+    print(f'threshold is {threshold} ..')
+    test_set = read_predictions(POCKETMINER_PREDICTIONS_PATH, TEST_SUBSET_PATH, TEST_PDB_FILES, threshold)   
 
     # with open('results.pickle', 'wb') as handle:
     #     pickle.dump(test_set, handle, protocol=pickle.HIGHEST_PROTOCOL)
