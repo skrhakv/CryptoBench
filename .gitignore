@@ -7,6 +7,7 @@ src/*/data/
 src/A-filter-ahojdb/output
 src/A-filter-ahojdb/tmp-data
 src/A-filter-ahojdb/error.txt
+src/A-filter-ahojdb/counts*
 src/B-create-dataset/cached_smiles.csv
 src/B-create-dataset/ligand.tsv
 src/B-create-dataset/playground.ipynb
@@ -21,3 +22,6 @@ src/other/jupyter-pymol-scripts/cif-files
 src/D-create-folds/download-sequences.sh
 src/D-create-folds/run-mmseq.sh
 osf-setup/.osfcli.config
+src/I-final/conservation/cryptic_scores
+src/I-final/conservation/noncryptic_scores
+src/I-final/conservation/otherwise_scores
