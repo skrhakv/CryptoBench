@@ -5,8 +5,8 @@ import biotite.structure.io.pdbx as mmcif
 import biotite.structure as struc
 
 CIF_FILES_PATH = '/home/vit/Projects/deeplife-project/data/cif_files'
-#INPUT_PATH = '/home/vit/Projects/cryptobench/osf-setup/cryptobench/cryptobench-dataset/dataset.json'
-INPUT_PATH = '/home/vit/Projects/cryptobench/osf-setup/cryptobench/cryptobench-dataset/auxiliary-data/non-cryptic-pockets/noncryptic-pockets.json'
+#INPUT_PATH = '/home/vit/Projects/cryptobench/data/I-final/cryptobench/cryptobench-dataset/dataset.json'
+INPUT_PATH = '/home/vit/Projects/cryptobench/data/I-final/cryptobench/cryptobench-dataset/auxiliary-data/non-cryptic-pockets/noncryptic-pockets.json'
 NON_CRYPTIC = True
 
 def auth_to_label(pdb_id, auth_binding_residues):

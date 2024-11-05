@@ -2,6 +2,12 @@
 This repository is the main repository for `CryptoBench`, a novel dataset.
 
 ## Overview
+1. The source code for creating the dataset is further detailed in `src/README.md`.
+2. For training the benchmark method, a framework from [this repository](https://github.com/skrhakv/apolo) was used.
+
+## Tutorial
+To simplify usage of the `CryptoBench` dataset, we provide a `tutorial/tutorial.ipynb` notebook, where you can find useful snippets for parsing and handling the dataset.
+
 ## How to cite:
 If you find our dataset useful, please cite:
 ```
