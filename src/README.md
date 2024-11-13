@@ -2,7 +2,7 @@
 This README file provides an overview of the pipeline used to extract the CryptoBench dataset. The extraction process is divided into several steps, allowing for easy rollback if necessary. The steps are listed alphabetically (e.g., `A-filter-ahojdb`, `B-create-dataset`, etc.).
 
 ## Download AHoJ-DB
-The CryptoBench dataset is built upon AHoJ-DB, a database containing apo-holo relationships derived from individual protein-ligand interactions. You can download the database using [this link](TODO!!!). The downloaded file includes three directories, each representing a different subset of the database.
+The CryptoBench dataset is built upon AHoJ-DB, a database containing apo-holo relationships derived from individual protein-ligand interactions. You can download the database using [this link](https://owncloud.cesnet.cz/index.php/s/ED53KZc6CwsARm4). The downloaded file includes three directories, each representing a different subset of the database.
 
 ## Extraction steps
 This section outlines each extraction step individually.
@@ -76,5 +76,3 @@ Although the evaluation of the benchmark method is managed in a separate reposit
 
 ### I-final
 This folder contains supplementary materials, including example files, README documentation, and other data to be attached to the final dataset release.
-
-## TODO: load AHOJ-DB zip somwhere and add the link 
