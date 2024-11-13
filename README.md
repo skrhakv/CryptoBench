@@ -1,5 +1,5 @@
 # CryptoBench
-This repository is the main repository for `CryptoBench`, a novel dataset.
+This repository is the main repository for `CryptoBench`, a novel dataset. It can be downloaded [here](https://osf.io/pz4a9/).
 
 ## Overview
 1. The source code for creating the dataset is further detailed in `src/README.md`.
