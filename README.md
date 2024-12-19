@@ -11,15 +11,17 @@ To simplify usage of the `CryptoBench` dataset, we provide a `tutorial/tutorial.
 ## How to cite:
 If you find our dataset useful, please cite:
 ```
-@article {skrhak2024cryptobench,
-	author = {Škrhák, Vít and Novotný, Marian and Feidakis, Christos P. and Krivák, Radoslav and Hoksza, David},
-	title = {CryptoBench: Cryptic protein-ligand binding sites dataset and benchmark},
-	year = {2024},
-	doi = {10.1101/2024.08.20.608828},
-	publisher = {Cold Spring Harbor Laboratory},
-	URL = {https://www.biorxiv.org/content/early/2024/08/21/2024.08.20.608828},
-	eprint = {https://www.biorxiv.org/content/early/2024/08/21/2024.08.20.608828.full.pdf},
-	journal = {bioRxiv}
+@article{skrhak2024cryptobench,
+    author = {Škrhák, Vít and Novotný, Marian and Feidakis, Christos P and Krivák, Radoslav and Hoksza, David},
+    title = {CryptoBench: Cryptic protein-ligand binding sites dataset and benchmark},
+    journal = {Bioinformatics},
+    pages = {btae745},
+    year = {2024},
+    month = {12},
+    issn = {1367-4811},
+    doi = {10.1093/bioinformatics/btae745},
+    url = {https://doi.org/10.1093/bioinformatics/btae745},
+    eprint = {https://academic.oup.com/bioinformatics/advance-article-pdf/doi/10.1093/bioinformatics/btae745/61228599/btae745.pdf},
 }
 ```
 
