@@ -5,17 +5,17 @@
 [![Dataset](https://img.shields.io/badge/Dataset%20on%20OSF-10.17605%2FOSF.IO%2FPZ4A9%20-blue.svg)](https://osf.io/pz4a9/)
 
 
-Cryptic binding sites are protein pockets that are malformed or inaccessible in their unbound state but become visible upon ligand binding. Identifying these sites is crucial for drug discovery and biomedical engineering. CryptoBench provides a large-scale dataset designed to aid in the development and evaluation of cryptic binding site prediction methods.
+Protein cryptic binding sites are sites that are spatially malformed or inaccessible in their unbound state but become visible through some external factor, such as ligand binding (see the example below). Identifying these sites is important in many applications from bioengineering to drug discovery. CryptoBench is a large-scale dataset designed to aid in the development and evaluation of new cryptic binding site prediction methods.
 
-Illustration of the unbound state of Cobyrinic acid a,c diamide synthase (PDB ID: 4PFS), showing that the binding site is not apparent. The ligand has been artificially added to highlight that it does not fit into the pocket in this state.  |  Illustration of the bound state (PDB ID: 5IF9) reveals the cryptic binding site after ligand binding.
+Illustration of the unbound state of Cobyrinic acid a,c diamide synthase (PDB ID: [4PFS](https://www.rcsb.org/structure/4pfs)), with obscured binding site. The ligand has been artificially added to highlight that it does not fit into the pocket in this state.  |  Illustration of the bound state of the same protein (PDB ID: [5IF9](https://www.rcsb.org/structure/5IF9)) shows that there actually exists a (cryptic) binding site.
 :-------------------------:|:-------------------------:
 ![](https://github.com/skrhakv/CryptoBench/blob/master/img/4pfs.png?raw=true)  |  ![](https://github.com/skrhakv/CryptoBench/blob/master/img/5if9.png?raw=true)
 
 
 ## About
-Welcome to CryptoBench, a novel and extensive dataset tailored for cryptic binding site prediction tasks. With [over 1,000 structures](https://academic.oup.com/view-large/500101074), CryptoBench is substantially larger than any previously available dataset. It can be used for training superior methods for cryptic binding site prediction, as it was already demonstrated by training a benchmark method [within the study](https://academic.oup.com/view-large/figure/500101098/btae745f4.tif).
+CryptoBench contains [over 1,000 structures](https://academic.oup.com/view-large/500101074) making it  substantially larger than any dataset available before. It can be used for training novel cryptic binding site prediction methods as it was demonstrated by training protein language model-based baseline method [within the CryptoBench manuscript](https://academic.oup.com/view-large/figure/500101098/btae745f4.tif).
 
-The complete dataset, including train-test splits, CIF files, and PyMOL visualization scripts, is available on the [OSF framework](https://osf.io/pz4a9/). 
+The complete CryptoBench dataset, including train-test splits, CIF files, and PyMOL visualization scripts, is available on the [OSF framework](https://osf.io/pz4a9/). 
 
 ## Tutorial
 To facilitate working with CryptoBench, we offer a [`tutorial/tutorial.ipynb` notebook](https://github.com/skrhakv/CryptoBench/blob/master/tutorial/tutorial.ipynb). This tutorial provides step-by-step guidance for parsing, handling train-test splits, and visualizing data within the dataset.
@@ -25,8 +25,7 @@ To facilitate working with CryptoBench, we offer a [`tutorial/tutorial.ipynb` no
 2. A framework from [this repository](https://github.com/skrhakv/apolo/tree/cryptobench-v2) was used to train the benchmark method.
 
 ## How to cite:
-If you find our dataset useful, please cite [our paper](https://academic.oup.com/bioinformatics/article/41/1/btae745/7927823):
-
+If you use CryptoBench, please cite [the paper](https://academic.oup.com/bioinformatics/article/41/1/btae745/7927823):
 
 - *Vít Škrhák, Marian Novotný, Christos P Feidakis, Radoslav Krivák, David Hoksza, CryptoBench: cryptic protein–ligand binding sites dataset and benchmark, Bioinformatics, Volume 41, Issue 1, January 2025, btae745, [https://doi.org/10.1093/bioinformatics/btae745](https://doi.org/10.1093/bioinformatics/btae745)*
 
