@@ -48,6 +48,9 @@ or, if you prefer the `BibTex` format:
 }
 ```
 
+## Contact us
+If you have any questions regarding the usage of the dataset or its assembly, comparing your method against the benchmark, or if you have any suggestions, please feel free to contact us by raising [an issue!](https://github.com/skrhakv/CryptoBench/issues)
+
 ## License
 This source code is licensed under the [MIT license](https://github.com/skrhakv/CryptoBench/blob/master/LICENSE).
 
