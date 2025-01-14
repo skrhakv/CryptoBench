@@ -30,7 +30,7 @@ If you use CryptoBench, please cite [the paper](https://academic.oup.com/bioinfo
 - *Vít Škrhák, Marian Novotný, Christos P Feidakis, Radoslav Krivák, David Hoksza, CryptoBench: cryptic protein–ligand binding sites dataset and benchmark, Bioinformatics, Volume 41, Issue 1, January 2025, btae745, [https://doi.org/10.1093/bioinformatics/btae745](https://doi.org/10.1093/bioinformatics/btae745)*
 
 
-or, if you prefer the `BibTex` format:
+or, if you prefer the `BibTeX` format:
 
 ```
 @article{skrhak2024cryptobench,
