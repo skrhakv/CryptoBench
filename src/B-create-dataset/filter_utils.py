@@ -7,7 +7,7 @@ import warnings
 import json
 from rdkit import Chem
 import os
-
+import constants
 # # #1 denotes hydrogen, #6 carbon, etc.
 # ORGANIC_ATOM_QUERY = Chem.MolFromSmarts(
 #     '[!$([#1,#5,#6,#7,#8,#9,#15,#16,#17,#35,#53])]')
@@ -22,12 +22,12 @@ cached_smiles = {}
 P2RANK_ATOMS_NUM_THRESHOLD = 5
 
 # DEFINE FILTER THRESHOLDS
-MAX_POCKET_RMSD = 0.5
-MIN_TM_SCORE = 0.5
-MAX_POCKET_DISTANCE = 4
-MIN_ROG_PERCENTAGE = 0.8
-MAX_ROG_PERCENTAGE = 1.2
-MIN_SEQUENCE_LENGTH = 50
+MAX_POCKET_RMSD = constants.MAX_POCKET_RMSD 
+MIN_TM_SCORE = constants.MIN_TM_SCORE 
+MAX_POCKET_DISTANCE = constants.MAX_POCKET_DISTANCE
+MIN_ROG_PERCENTAGE = constants.MIN_ROG_PERCENTAGE 
+MAX_ROG_PERCENTAGE = constants.MAX_ROG_PERCENTAGE 
+MIN_SEQUENCE_LENGTH = constants.MIN_SEQUENCE_LENGTH 
 
 def get_well_defined_pairs(df):
     return df[(df['apo_tm_score'] > MIN_TM_SCORE) &
@@ -178,7 +178,7 @@ def find_highest_cluster_pocket_rmsd_ids(clusters, df):
     for cluster, cluster_sequences in clusters.items():
         indices.append(
             df[
-                df['apo_UNPs'].apply(lambda s: any(x in s for x in cluster_sequences))]['apo_pocket_rms'].idxmax())
+                df['apo_UNPs'].apply(lambda s: any(x in s for x in cluster_sequences))]['apo_pocket_rms'].idxmin())
     return indices
 
 

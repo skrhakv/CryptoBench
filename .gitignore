@@ -21,3 +21,8 @@ src/other/jupyter-pymol-scripts/cif-files
 src/D-create-folds/download-sequences.sh
 src/D-create-folds/run-mmseq.sh
 osf-setup/.osfcli.config
+src/A-filter-ahojdb/counts-complete-pockets.txt
+src/A-filter-ahojdb/counts.txt
+src/F-statistics/conservation/
+src/other/run-benchmark/
+tutorial/

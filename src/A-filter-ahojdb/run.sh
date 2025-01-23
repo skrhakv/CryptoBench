@@ -2,10 +2,11 @@
 
 # constants
 readonly PYTHON_PATH=/home/vit/miniconda3/bin/activate
-readonly OUTPUT_PATH=/home/vit/Projects/cryptobench/data/A-filter-ahojdb-v2
+readonly OUTPUT_PATH=/home/vit/Projects/cryptobench/data/A-filter-ahojdb-v2/rigid-dataset
 # CAUTION: if you have multiple folders (i.e. I got 3 folders - storage1, storage2, storage3),
 # you need to run this for each of these folders separately 
-readonly INPUT_PATH=/home/vit/Projects/cryptobench/data/ahoj-db/storage3/storage/praha1/home/davidhoksza/projects/ahoj/output4
+readonly INPUT_PATH=/home/vit/Projects/cryptobench/data/ahoj-db/storage1/storage/praha1/home/davidhoksza/projects/ahoj/output
+# readonly INPUT_PATH=/home/vit/Projects/cryptobench/data/ahoj-db/storage3/storage/praha1/home/davidhoksza/projects/ahoj/output4
 
 # vars
 BASEDIR=$(realpath $(dirname $0))
@@ -19,8 +20,12 @@ mkdir $TMP_DIR
 for batch_path in $INPUT_PATH/*/; do
     BATCH=${batch_path: -4:-1}
     mkdir $TMP_DIR/$BATCH
+    echo "Processing batch $BATCH"
 
-    for f in $INPUT_PATH/$BATCH/*.tgz; do tar -xvf "$f" -C $TMP_DIR/$BATCH --one-top-level > /dev/null; done
+    for f in $INPUT_PATH/$BATCH/*.tgz; do 
+        # echo "Extracting $f"
+        tar -xvf "$f" -C $TMP_DIR/$BATCH --one-top-level > /dev/null
+    done
 
     # remove incomplete pairs
     mkdir $TMP_DIR/$BATCH-pairs
