@@ -14,6 +14,7 @@ src/B-create-dataset/playground.ipynb
 src/other/*.csv
 src/other/data
 src/other/pymol-scripts
+src/other/run-benchmark
 src/other/jupyter-pymol-scripts/cif-files
 src/other/jupyter-pymol-scripts/data
 src/other/jupyter-pymol-scripts/cryptosite-pymol-scripts
