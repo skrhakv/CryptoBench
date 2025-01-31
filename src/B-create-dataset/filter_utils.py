@@ -176,9 +176,10 @@ def find_highest_cluster_pocket_rmsd_ids(clusters, df):
 
     indices = []
     for cluster, cluster_sequences in clusters.items():
+        # changed 'apo_pocket_rms' to 'minimum_alternatives'
         indices.append(
             df[
-                df['apo_UNPs'].apply(lambda s: any(x in s for x in cluster_sequences))]['apo_pocket_rms'].idxmin())
+                df['apo_UNPs'].apply(lambda s: any(x in s for x in cluster_sequences))]['minimum_alternatives'].idxmax())
     return indices
 
 

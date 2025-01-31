@@ -3,9 +3,9 @@ import filter_utils
 import os
 
 
-INPUT_PATH = '../../data/A-filter-ahojdb-v2'
+INPUT_PATH = '../../data/A-filter-ahojdb-v2/rigid-dataset'
 INPUT_CSV = f'{INPUT_PATH}/pairs.csv'
-OUTPUT_PATH = '../../data/B-create-dataset/bibm2024'
+OUTPUT_PATH = '../../data/B-create-dataset/rigid-dataset-alternative-aware'
 
 PREFILTERED_CSV = f'{OUTPUT_PATH}/filtered_rmsd.csv'
 DATASET_DATAFRAME = f'{OUTPUT_PATH}/dataset_dataframe.csv'
@@ -26,6 +26,7 @@ def load_ahojdb():
     # filter AHoJ-DB according to the defined thresholds
     filtered_rmsd_df = filter_utils.get_well_defined_pairs(filtered_rmsd_df)
     filtered_rmsd_df = filtered_rmsd_df[(filtered_rmsd_df['apo_pocket_rms'] < filter_utils.MAX_POCKET_RMSD)]
+    filtered_rmsd_df['minimum_alternatives'] = filtered_rmsd_df[['number_of_alternative_holos', 'number_of_alternative_apos']].min(axis=1)
     return filtered_rmsd_df
 
 
@@ -34,7 +35,7 @@ def main():
     filtered_rmsd_df = filter_utils.filter_valid_ligands(
         filtered_rmsd_df, OUTPUT_PATH)
     filter_utils.write_uniprot_ids(filtered_rmsd_df, OUTPUT_PATH)
-    filter_utils.download_sequences(OUTPUT_PATH)
+    #filter_utils.download_sequences(OUTPUT_PATH)
     filter_utils.run_shell_mmseq(OUTPUT_PATH)
     clusters, _ = filter_utils.read_clusters(
         f'{OUTPUT_PATH}/clusterRes_cluster.tsv')
