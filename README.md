@@ -23,7 +23,7 @@ To facilitate working with CryptoBench, we offer a [`tutorial/tutorial.ipynb` no
 ## Overview
 1. For details on the dataset construction process and potential reproduction purposes, please refer to the `src/README.md`.
 2. A framework from [this repository](https://github.com/skrhakv/apolo/tree/cryptobench-v2) was used to train the benchmark method.
-
+3. Since the original PocketMiner code required minor adjustments to work, the forked PocketMiner repository, along with steps on how PocketMiner was evaluated on the CryptoBench test set, can be found [here](https://github.com/skrhakv/gvp).
 ## How to cite:
 If you use CryptoBench, please cite [the paper](https://academic.oup.com/bioinformatics/article/41/1/btae745/7927823):
 
