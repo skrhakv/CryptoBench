@@ -11,8 +11,8 @@ NUM_OF_FOLDS = 4
 FOLD_RATIO = TRAIN_RATIO / NUM_OF_FOLDS
 MIN_SEQUENCE_IDENTITY = 0.1
 
-OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/D-create-folds/bibm2024'
-INPUT_PATH = '/home/vit/Projects/cryptobench/data/C-remove-holo-homomers/bibm2024'
+OUTPUT_PATH = '../../data/D-create-folds/rigid-dataset'
+INPUT_PATH = '../../data/C-remove-holo-homomers/rigid-dataset'
 
 def copy_shell_scripts():
     shutil.copy('../B-create-dataset/run-mmseq.sh', '.')
@@ -64,7 +64,10 @@ def write_uniprot_ids_to_file(dataset):
     with open(filename, 'r') as file:
         filedata = file.read()
 
+    # protect the O60885-2 from splitting (inconsistency in the format of the data)
+    filedata = filedata.replace('O60885-2', 'O608852')
     filedata = filedata.replace('-', '\n')
+    filedata = filedata.replace('O608852', 'O60885-2')
 
     with open(filename, 'w') as file:
         file.write(filedata)
@@ -89,7 +92,10 @@ def merge_clusters_with_multiple_sequence_structures(clusters, seq_id_to_cluster
     print('Merge clusters with multiple sequence structures ...')
 
     for mult_sequence in multiple_sequences:
-        main_cluster, others = mult_sequence.split('-')[0], mult_sequence.split('-')[1:]
+        if not mult_sequence == 'O60885-2':
+            main_cluster, others = mult_sequence.split('-')[0], mult_sequence.split('-')[1:]
+        else:
+            main_cluster, others = 'O60885-2', []
         main_cluster_id = seq_id_to_cluster[main_cluster]
         seq_id_to_cluster[mult_sequence] = main_cluster_id
         clusters[main_cluster_id].append(mult_sequence)
@@ -174,19 +180,19 @@ def check_structures_assigned_to_multiple_uniprot_ids(uniprot_to_pdb_mapping, cl
 
 def save_dataset(train, test, dataset):
     print('Save dataset ...')
-    with open(f'{OUTPUT_PATH}/cryptobench/folds/test.json', 'w', encoding='utf-8') as f:
+    with open(f'{OUTPUT_PATH}/rigid-dataset/folds/test.json', 'w', encoding='utf-8') as f:
         json.dump(test, f, ensure_ascii=False, indent=4)
     for i in range(NUM_OF_FOLDS):
-        with open(f'{OUTPUT_PATH}/cryptobench/folds/train-fold-{i}.json', 'w', encoding='utf-8') as f:
+        with open(f'{OUTPUT_PATH}/rigid-dataset/folds/train-fold-{i}.json', 'w', encoding='utf-8') as f:
             json.dump(train[i], f, ensure_ascii=False, indent=4)
-    with open(f'{OUTPUT_PATH}/cryptobench/dataset.json', 'w', encoding='utf-8') as f:
+    with open(f'{OUTPUT_PATH}/rigid-dataset/dataset.json', 'w', encoding='utf-8') as f:
         json.dump(dataset, f, ensure_ascii=False, indent=4)
 
     splits = {}
     splits['test'] = list(test.keys())
     for i in range(NUM_OF_FOLDS):
         splits[f'train-{i}'] = list(train[i].keys())
-    with open(f'{OUTPUT_PATH}/cryptobench/splits.json', 'w', encoding='utf-8') as f:
+    with open(f'{OUTPUT_PATH}/rigid-dataset/splits.json', 'w', encoding='utf-8') as f:
         json.dump(splits, f, ensure_ascii=False, indent=4)
 
 def main():

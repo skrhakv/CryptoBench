@@ -35,7 +35,7 @@ def main():
     filtered_rmsd_df = filter_utils.filter_valid_ligands(
         filtered_rmsd_df, OUTPUT_PATH)
     filter_utils.write_uniprot_ids(filtered_rmsd_df, OUTPUT_PATH)
-    #filter_utils.download_sequences(OUTPUT_PATH)
+    filter_utils.download_sequences(OUTPUT_PATH)
     filter_utils.run_shell_mmseq(OUTPUT_PATH)
     clusters, _ = filter_utils.read_clusters(
         f'{OUTPUT_PATH}/clusterRes_cluster.tsv')
