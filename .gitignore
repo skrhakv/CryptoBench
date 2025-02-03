@@ -27,3 +27,7 @@ src/F-statistics/conservation/cryptic_scores
 src/F-statistics/conservation/noncryptic_scores
 src/F-statistics/conservation/otherwise_scores
 tutorial/cryptobench
+tutorial/1tem-beta-lactamase-prediction/__pycache__
+tutorial/1tem-beta-lactamase-prediction/1jwpA.txt
+tutorial/1tem-beta-lactamase-prediction/annotation.txt
+tutorial/1tem-beta-lactamase-prediction/visualization.pse
