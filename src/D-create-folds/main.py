@@ -1,6 +1,6 @@
 import json
 import sys
-import csv
+import os
 import shutil 
 
 sys.path.append('../B-create-dataset')
@@ -11,8 +11,8 @@ NUM_OF_FOLDS = 4
 FOLD_RATIO = TRAIN_RATIO / NUM_OF_FOLDS
 MIN_SEQUENCE_IDENTITY = 0.1
 
-OUTPUT_PATH = '../../data/D-create-folds/rigid-dataset'
-INPUT_PATH = '../../data/C-remove-holo-homomers/rigid-dataset'
+OUTPUT_PATH = '../../data/D-create-folds/rigid-dataset-alternative-aware'
+INPUT_PATH = '../../data/C-remove-holo-homomers/rigid-dataset-alternative-aware'
 
 def copy_shell_scripts():
     shutil.copy('../B-create-dataset/run-mmseq.sh', '.')
@@ -180,6 +180,8 @@ def check_structures_assigned_to_multiple_uniprot_ids(uniprot_to_pdb_mapping, cl
 
 def save_dataset(train, test, dataset):
     print('Save dataset ...')
+    if not os.path.exists(f'{OUTPUT_PATH}/rigid-dataset/folds'):
+        os.makedirs(f'{OUTPUT_PATH}/rigid-dataset/folds')
     with open(f'{OUTPUT_PATH}/rigid-dataset/folds/test.json', 'w', encoding='utf-8') as f:
         json.dump(test, f, ensure_ascii=False, indent=4)
     for i in range(NUM_OF_FOLDS):
