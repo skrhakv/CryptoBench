@@ -24,6 +24,26 @@ To facilitate working with CryptoBench, we offer a [`tutorial/tutorial.ipynb` no
 1. For details on the dataset construction process and potential reproduction purposes, please refer to the `src/README.md`.
 2. A framework from [this repository](https://github.com/skrhakv/apolo/tree/cryptobench-v2) was used to train the benchmark method.
 3. Since the original PocketMiner code required minor adjustments to work, the forked PocketMiner repository, along with steps on how PocketMiner was evaluated on the CryptoBench test set, can be found [here](https://github.com/skrhakv/gvp).
+
+## Benchmark method results
+In the [CryptoBench study](https://academic.oup.com/bioinformatics/article/41/1/btae745/7927823), we evaluated the performance of three methods on the CryptoBench test set: the newly developed **benchmark method (pLM-NN)**, **PocketMiner**, and **P2Rank**.
+
+| Method      | Dataset             | AUC  | AUPRC | ACC  | FPR  | TPR  | MCC  | F1 Score |
+| ----------- | ------------------- | ---- | ----- | ---- | ---- | ---- | ---- | -------- |
+| pLM-NN      | CB-full [^1]        | 0.86 | 0.36  | 0.93 | 0.05 | 0.48 | 0.39 | 0.92     |
+| pLM-NN      | CB-PM [^2]          | 0.88 | 0.43  | 0.93 | 0.04 | 0.52 | 0.44 | 0.93     |
+| PocketMiner | CB-PM               | 0.76 | 0.19  | 0.82 | 0.16 | 0.51 | 0.22 | 0.78     |
+| pLM-NN      | CB-P2RANK-apo [^3]  | 0.88 | 0.42  | 0.93 | 0.04 | 0.51 | 0.43 | 0.93     |
+| P2RANK      | CB-P2RANK-apo       | 0.81 | 0.21  | 0.85 | 0.14 | 0.62 | 0.27 | 0.81     |
+| P2RANK      | CB-P2RANK-holo [^4] | 0.89 | 0.34  | 0.85 | 0.15 | 0.84 | 0.38 | 0.81     |
+
+[^1]: CB-full denotes the whole CryptoBench test set.
+[^2]: CB-PM denotes the subset on which PocketMiner was evaluated 
+[^3]: CB-P2RANK-apo denotes the subset on which P2Rank was evaluated
+[^4]: CB-P2RANK-holo denotes the holo counterparts of the CB-P2RANK-apo subset.
+
+If you would like to evaluate your method using this dataset or compare your predictions with the benchmark, feel free to reach out! You can contact us via [GitHub Issues](https://github.com/skrhakv/CryptoBench/issues) or by email, which can be found in the paper.
+
 ## How to cite:
 If you use CryptoBench, please cite [the paper](https://academic.oup.com/bioinformatics/article/41/1/btae745/7927823):
 
