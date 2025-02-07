@@ -23,9 +23,7 @@ src/other/jupyter-pymol-scripts/cif-files
 src/D-create-folds/download-sequences.sh
 src/D-create-folds/run-mmseq.sh
 osf-setup/.osfcli.config
-src/F-statistics/conservation/cryptic_scores
-src/F-statistics/conservation/noncryptic_scores
-src/F-statistics/conservation/otherwise_scores
+src/F-statistics/conservation/
 tutorial/cryptobench
 tutorial/benchmark-tutorial/__pycache__
 tutorial/benchmark-tutorial/visualization.pse
