@@ -42,9 +42,6 @@ def get_well_defined_pairs(df):
                          # (df['apo_sequence_length'].apply(lambda sequence_lengths: all(int(i) > MIN_SEQUENCE_LENGTH for i in str(sequence_lengths).split('_'))))]
 
 def check_ligand_atom_count(smiles):
-    # TODO: switch for p2rank-based filtering:
-    # hint: https://chemistry.stackexchange.com/questions/43363/how-to-calculate-hydrogen-from-smiles-string
-    # TODO: test manually on Zn++, etc.
     if len(smiles.values) < 1:
         return False
 
