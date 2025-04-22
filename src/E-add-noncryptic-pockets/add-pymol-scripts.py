@@ -1,10 +1,10 @@
 import json
 from itertools import groupby
 
-OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/E-add-noncryptic-pockets/ahoj-v2/cryptobench'
-CRYPTIC_DATASET_PATH = f'{OUTPUT_PATH}/dataset.json'
+OUTPUT_PATH = '/home/vit/Projects/cryptobench/data/E-add-noncryptic-pockets/ahoj-v2/rigid-dataset'
+CRYPTIC_DATASET_PATH = f'/home/vit/Projects/cryptobench/data/D-create-folds/rigid-dataset-alternative-aware/rigid-dataset/dataset.json'
 NONCRYPTIC_DATASET_PATH = f'{OUTPUT_PATH}/auxiliary-data/non-cryptic-pockets/noncryptic-pockets.json'
-PYMOL_SCRIPTS_PATH = f'{OUTPUT_PATH}/auxiliary-data/pymol-scripts'
+PYMOL_SCRIPTS_PATH = f'/home/vit/Projects/cryptobench/data/E-add-noncryptic-pockets/ahoj-v2/rigid-dataset/auxiliary-data/pymol-scripts'
 
 def create_id(apo_pdb_id, record):
     return f'{apo_pdb_id}{record["apo_chain"]}_{record["holo_pdb_id"]}{record["holo_chain"]}'
@@ -54,8 +54,8 @@ def main():
     with open(CRYPTIC_DATASET_PATH) as f:
         cryptic_dataset = json.load(f)
 
-    with open(NONCRYPTIC_DATASET_PATH) as f:
-        noncryptic_dataset = json.load(f)
+    # with open(NONCRYPTIC_DATASET_PATH) as f:
+    #     noncryptic_dataset = json.load(f)
 
     pockets: {str, Pocket} = {}
     for apo_pdb_id, holo_structures in cryptic_dataset.items():
@@ -66,11 +66,11 @@ def main():
             else: 
                 pockets[id] = Pocket(apo_pdb_id, holo_structure)
     
-    for apo_pdb_id, holo_structures in noncryptic_dataset.items():
-        for holo_structure in holo_structures:
-            id = create_id(apo_pdb_id, holo_structure)
-            if id in pockets:
-                pockets[id].add_noncryptic_pocket(holo_structure)
+    # for apo_pdb_id, holo_structures in noncryptic_dataset.items():
+    #     for holo_structure in holo_structures:
+    #         id = create_id(apo_pdb_id, holo_structure)
+    #         if id in pockets:
+    #             pockets[id].add_noncryptic_pocket(holo_structure)
                 
     for id, pocket in pockets.items():
         with open(f'{PYMOL_SCRIPTS_PATH}/{pocket.id}.pml', 'w') as pymol_script:
