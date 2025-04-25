@@ -53,7 +53,7 @@ def reinitialize_pymol():
     cmd.reinitialize()
 
 
-def get_pocket_selection(pocket_selections, structure_info) -> str | None:
+def get_pocket_selection(pocket_selections, structure_info):
     structure_id = structure_info.structure
     pocket_id = structure_info.pocket[1:]
     if pocket_selections[pocket_selections[0] == f'{structure_id}.pocket_{pocket_id}'][1].empty:

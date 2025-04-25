@@ -16,6 +16,7 @@ import os
 # HAS_CH_QUERY = Chem.MolFromSmarts('[C!H0]')
 
 cached_smiles = {}
+valid_ligands_df = None
 
 # https://github.com/rdkit/rdkit/discussions/5314
 
@@ -100,22 +101,22 @@ def remove_ignored_groups(df):
 #         (df['holo_structure'].str.contains('\+') != True)]
 
 
-def filter_valid_ligands(df, path):
-    print('Filter ligands ...')
-    cached_smiles.clear()
-
+def filter_valid_ligands(df, path, query_poi_name='apo_query_POI'):
+    global valid_ligands_df, cached_smiles
+    
     # read cached smiles
     cached_smiles_path = f'{path}/cached_smiles.csv'
-    if os.path.exists(cached_smiles_path):
+    if len(cached_smiles) == 0 and os.path.exists(cached_smiles_path):
         with open(cached_smiles_path, 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=';')
             for row in reader:
                 cached_smiles[row[0].strip()] = row[1] == 'True'
 
     # load all ligand smiles
-    valid_ligands_df = pd.read_csv(f'{path}/ligand.tsv', sep='\t')
+    if valid_ligands_df is None:
+        valid_ligands_df = pd.read_csv(f'{path}/ligand.tsv', sep='\t')
     df[['ligand_chain', 'ligand', 'ligand_index']
-       ] = df['apo_query_POI'].str.split('_', expand=True)
+       ] = df[query_poi_name].str.split('_', expand=True)
 
     # check each ligand in dataset using smiles
     df = remove_ignored_groups(df)
