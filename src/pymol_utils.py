@@ -1,9 +1,8 @@
-from pymol import cmd
-
 structure_set = set()
 
 
 def get_pocket_residues(pocket_selection) -> [str]:
+    from pymol import cmd
     pocket_residues = []
     previous_atom = ('', '')
     for atom in [(a.resn, a.resi) for a in cmd.get_model(selection=pocket_selection).atom]:
@@ -26,10 +25,13 @@ def check_pocket_similarity(apo_pocket, holo_pocket) -> bool:
 
 
 def get_pocket_rmsd(apo_pocket, holo_pocket) -> int:
+    from pymol import cmd
     return cmd.align(apo_pocket, holo_pocket, cycles=0)[0]
 
 
 def load_pair(structure1, structure2) -> bool:
+    from pymol import cmd
+
     if len(structure_set) > 50:
         reinitialize_pymol()
     if structure1 == structure2:
@@ -45,6 +47,8 @@ def load_pair(structure1, structure2) -> bool:
 
 
 def reinitialize_pymol():
+    from pymol import cmd
+
     structure_set.clear()
     cmd.reinitialize()
 
