@@ -7,7 +7,7 @@
 #SBATCH --mail-user=v.skrhak@gmail.com # send email when job changes state to email address user@example.com
 
 
-DATADIR=/home/skrhakv/CryptoBench/src/A-filter-ahojdb
+SCRIPTDIR=/home/skrhakv/CryptoBench/src/A-filter-ahojdb
 
 # clean the output file
 rm /home/skrhakv/CryptoBench/data/A-filter-ahojdb/holo_only_data/pairs.csv
@@ -15,5 +15,5 @@ rm /home/skrhakv/CryptoBench/data/A-filter-ahojdb/holo_only_data/pairs.csv
 # activate venv
 source /home/skrhakv/CryptoBench/holo_venv/bin/activate
 
-cd $DATADIR
+cd $SCRIPTDIR
 python3 main.py

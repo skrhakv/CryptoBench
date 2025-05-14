@@ -63,3 +63,9 @@ def get_pocket_selection(pocket_selections, structure_info):
             return None
     else:
         return pocket_selections[pocket_selections[0] == f'{structure_id}.pocket_{pocket_id}'][1].values[0]
+
+def get_alphafold_pocket_selection(pocket_selections, structure_info):
+    if pocket_selections[pocket_selections[0] == f'AF_{structure_info.UNPs}_as_{structure_info.structure}{structure_info.chains3}.{structure_info.query_POI}'][1].empty:
+        return None
+    else:    
+        return pocket_selections[pocket_selections[0] == f'AF_{structure_info.UNPs}_as_{structure_info.structure}{structure_info.chains3}.{structure_info.query_POI}'][1].values[0]

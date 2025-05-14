@@ -55,14 +55,19 @@ def main():
 
             assert holo_info.shape[0] == 1, f'Error: more than one holo structure found for {job}, batch: {batch}'
 
-            # retrieve appropriate pocket selection from the pocket_selections.csv file
+            # retrieve appropriate pocket selections (PDB and AF) from the pocket_selections.csv file
             pocket_selections = pd.read_csv(
                 f'{INPUT_PATH}/{batch}/{job}/pocket_selections.csv', header=None)
-            pocket_selection = pymol_utils.get_pocket_selection(
+            pdb_pocket_selection = pymol_utils.get_pocket_selection(
                 pocket_selections, holo_info.iloc[0])
-
+            alphafold_pocket_selection = pymol_utils.get_alphafold_pocket_selection(
+                pocket_selections, holo_info.iloc[0])
+            if alphafold_pocket_selection is None:
+                print(f'Error: no AF pocket selection found for {job}, batch: {batch}')
+                continue
             # add the selection to the holo_info dataframe
-            holo_info['pocket_selection'] = [pocket_selection]
+            holo_info['pdb_pocket_selection'] = [pdb_pocket_selection]
+            holo_info['alphafold_pocket_selection'] = [alphafold_pocket_selection]
 
             # skip if ligand is not valid
             holo_info = filter_utils.filter_valid_ligands(
