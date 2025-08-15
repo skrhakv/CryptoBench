@@ -1,16 +1,16 @@
 #!/bin/bash
-#SBATCH --partition=mpi-homo-ffa           # partition you want to run job in
-#SBATCH --time=12:00:00           # walltime for the job in format (days-)hours:minutes:seconds
+#SBATCH --partition=gpu-bio           # partition you want to run job in
+#SBATCH --time=167:00:00           # walltime for the job in format (days-)hours:minutes:seconds
 #SBATCH --mem=100000               # memory resource
 #SBATCH --job-name="extract-ahojdb"     # change to your job name
-#SBATCH --output=/home/skrhakv/CryptoBench/data/A-filter-ahojdb/all_holo/output.txt       # stdout and stderr output file
+#SBATCH --output=/home/skrhakv/CryptoBench/data/A-filter-ahojdb/holo_only_data/output.txt       # stdout and stderr output file
 #SBATCH --mail-user=v.skrhak@gmail.com # send email when job changes state to email address user@example.com
 
 
 SCRIPTDIR=/home/skrhakv/CryptoBench/src/A-filter-ahojdb
 
 # clean the output file
-rm /home/skrhakv/CryptoBench/data/A-filter-ahojdb/all_holo/pairs.csv
+rm /home/skrhakv/CryptoBench/data/A-filter-ahojdb/holo_only_data_max_resolution/pairs.csv
 
 # activate venv
 source /home/skrhakv/CryptoBench/holo_venv/bin/activate
