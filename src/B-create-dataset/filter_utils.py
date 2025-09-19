@@ -66,19 +66,6 @@ def check_ligand_atom_count(smiles):
         cached_smiles[i] = is_valid_smiles
         return is_valid_smiles
 
-        #
-        # this is the old way - look into the BioLip database to find its smiles and then use the ORGANIC_ATOM_QUERY, ORGANIC_BOND_QUERY, HAS_CH_QUERY whether
-        # the ligand is 'organic' or not
-        #
-
-        # try:
-        #     _is_organic = (not molecule.HasSubstructMatch(ORGANIC_ATOM_QUERY)) and molecule.HasSubstructMatch(ORGANIC_BOND_QUERY)\
-        #         and molecule.HasSubstructMatch(HAS_CH_QUERY)
-        #     cached_smiles[i] = _is_organic
-        #     return _is_organic
-        # except:
-        #     cached_smiles[i] = False
-        #     continue
     return False
 
 
