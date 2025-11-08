@@ -13,10 +13,14 @@ import json
 
 # only holo structures with good resolution (max 4 Angstroms) and without any apo structures
 # OUTPUT_PATH = '/home/skrhakv/CryptoBench/data/A-filter-ahojdb/holo_only_label_seq_mapping'
+
 # all holo structures, those with apo structures as well
 # OUTPUT_PATH = '/home/skrhakv/CryptoBench/data/A-filter-ahojdb/holo_only_with_apo'
-# with commented 66-68th line
-OUTPUT_PATH = '/home/skrhakv/CryptoBench/data/A-filter-ahojdb/all_holo'
+
+# all holos with filtered ligands (filter_utils.filter_valid_ligands(...))
+# OUTPUT_PATH = '/home/skrhakv/CryptoBench/data/A-filter-ahojdb/all_holo'
+
+OUTPUT_PATH = '/home/skrhakv/CryptoBench/data/A-filter-ahojdb/all_apoholo_all_ligands'
 INPUT_PATH = '/home/skrhakv/CryptoBench/data/ahoj-db/ahojdb_v2c/data'
 LIGANDS_PATH = '/home/skrhakv/CryptoBench/data/B-create-dataset/holo_only_data'
 
@@ -62,17 +66,24 @@ def main():
             
             print(f'processing {job}, batch: {batch}')
 
-            # uncommented in data/A-filter-ahojdb/holo_only_with_apo:
-            #
-            # this happens in the data and I don't know why, rather skip it
-            # if not os.path.exists(f'{INPUT_PATH}/{batch}/{job}/apo_filtered_sorted_results.csv'):
-            #     continue
             if not os.path.exists(f'{INPUT_PATH}/{batch}/{job}/query_pocket_info.csv') or not os.path.exists(f'{INPUT_PATH}/{batch}/{job}/pocket_selections.csv'):
+                continue
+            # this happens in the data and I don't know why, rather skip it
+
+            if not os.path.exists(f'{INPUT_PATH}/{batch}/{job}/apo_filtered_sorted_results.csv'):
+                continue
+
+            # skip if apo structures exist
+            apo_info = pd.read_csv(
+                f'{INPUT_PATH}/{batch}/{job}/apo_filtered_sorted_results.csv')
+
+            if apo_info.empty:
                 continue
 
             # load holo info
             holo_info = pd.read_csv(
                 f'{INPUT_PATH}/{batch}/{job}/query_pocket_info.csv')
+            apo_info['resolution'] = apo_info['resolution'].replace('-', math.inf)
 
             # consider holo when there is complete pocket and good resolution
             holo_info['resolution'] = holo_info['resolution'].replace(
@@ -87,35 +98,38 @@ def main():
 
             assert holo_info.shape[0] == 1, f'Error: more than one holo structure found for {job}, batch: {batch}'
 
-            # retrieve appropriate pocket selections (PDB and AF) from the pocket_selections.csv file
+            apo_headers = apo_info.to_dict()
+            holo_headers = holo_info.to_dict()
+            apo_headers = {f'apo_{k}': [] for k, v in apo_headers.items()}
+            holo_headers = {f'holo_{k}': [] for k, v in holo_headers.items()}
+            apo_holo_pairs = apo_headers | holo_headers
+            apo_holo_pairs['apo_pocket_selection'] = []
+            apo_holo_pairs['holo_pocket_selection'] = []
+
             pocket_selections = pd.read_csv(
                 f'{INPUT_PATH}/{batch}/{job}/pocket_selections.csv', header=None)
-            pdb_pocket_selection = pymol_utils.get_pocket_selection(
+
+            holo_pocket_selection = pymol_utils.get_pocket_selection(
                 pocket_selections, holo_info.iloc[0])
-            alphafold_pocket_selection = pymol_utils.get_alphafold_pocket_selection(
-                pocket_selections, holo_info.iloc[0])
-            if alphafold_pocket_selection is None:
-                print(f'Error: no AF pocket selection found for {job}, batch: {batch}')
-                continue
-            # add the selection to the holo_info dataframe
-            holo_info['pdb_pocket_selection'] = [pdb_pocket_selection]
-            holo_info['alphafold_pocket_selection'] = [alphafold_pocket_selection]
 
-            mapped_binding_site = get_label_seq_binding_site(holo_info, batch, job)
-            
-            if mapped_binding_site is None:
-                continue
-            holo_info['label_seq_pdb_pocket_selection'] = [mapped_binding_site]
+            for apo_row1 in apo_info.itertuples():
+                apo_pocket_selection1 = pymol_utils.get_pocket_selection(
+                    pocket_selections, apo_row1)
+                if apo_pocket_selection1 == None:
+                    continue
+                apo_holo_pairs[f'apo_pocket_selection'].append(
+                    apo_pocket_selection1)
+                apo_holo_pairs[f'holo_pocket_selection'].append(
+                    holo_pocket_selection)
+                for header, column in apo_info.loc[apo_row1.Index].items():
+                    apo_holo_pairs[f'apo_{header}'].append(column)
+                for header, column in holo_info.iloc[0].items():
+                    apo_holo_pairs[f'holo_{header}'].append(column)
+                
+            df_apo_holo_pairs = pd.DataFrame.from_dict(apo_holo_pairs)
 
-            # skip if ligand is not valid
-            holo_info = filter_utils.filter_valid_ligands(
-                holo_info, LIGANDS_PATH, query_poi_name='query_POI')
-            if holo_info.empty:
-                continue
-
-            # append it to the output file
-            holo_info.to_csv(output_file_location, mode='a',
-                header=not os.path.exists(output_file_location))
-    
+            df_apo_holo_pairs.to_csv(output_file_location, mode='a',
+                                 header=not os.path.exists(output_file_location))
+        
 if __name__ == '__main__':
     main()
