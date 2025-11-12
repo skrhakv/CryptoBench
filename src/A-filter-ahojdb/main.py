@@ -20,6 +20,9 @@ import json
 # all holos with filtered ligands (filter_utils.filter_valid_ligands(...))
 # OUTPUT_PATH = '/home/skrhakv/CryptoBench/data/A-filter-ahojdb/all_holo'
 
+# this is the same but it doesn't include other ligands from the HOLO structure (query_pocket_info.csv)
+# OUTPUT_PATH = '/home/skrhakv/CryptoBench/data/A-filter-ahojdb/old_all_apoholo_all_ligands'
+ 
 OUTPUT_PATH = '/home/skrhakv/CryptoBench/data/A-filter-ahojdb/all_apoholo_all_ligands'
 INPUT_PATH = '/home/skrhakv/CryptoBench/data/ahoj-db/ahojdb_v2c/data'
 LIGANDS_PATH = '/home/skrhakv/CryptoBench/data/B-create-dataset/holo_only_data'
@@ -77,9 +80,6 @@ def main():
             apo_info = pd.read_csv(
                 f'{INPUT_PATH}/{batch}/{job}/apo_filtered_sorted_results.csv')
 
-            if apo_info.empty:
-                continue
-
             # load holo info
             holo_info = pd.read_csv(
                 f'{INPUT_PATH}/{batch}/{job}/query_pocket_info.csv')
@@ -89,9 +89,10 @@ def main():
             holo_info['resolution'] = holo_info['resolution'].replace(
             '-', math.inf)
 
-            # skip if no holo structures with good resolution exist
+            # this shouldn't happen, but just in case
             if holo_info.empty:
                 continue
+
             # skip if holo structure is multi-chain
             if '-' in str(holo_info['chains3'].iloc[0]):
                 continue 
@@ -102,6 +103,9 @@ def main():
             holo_headers = holo_info.to_dict()
             apo_headers = {f'apo_{k}': [] for k, v in apo_headers.items()}
             holo_headers = {f'holo_{k}': [] for k, v in holo_headers.items()}
+            if 'apo_RoG_distance' not in apo_headers:
+                apo_headers['apo_RoG_distance'] = []
+
             apo_holo_pairs = apo_headers | holo_headers
             apo_holo_pairs['apo_pocket_selection'] = []
             apo_holo_pairs['holo_pocket_selection'] = []
@@ -112,24 +116,35 @@ def main():
             holo_pocket_selection = pymol_utils.get_pocket_selection(
                 pocket_selections, holo_info.iloc[0])
 
-            for apo_row1 in apo_info.itertuples():
-                apo_pocket_selection1 = pymol_utils.get_pocket_selection(
-                    pocket_selections, apo_row1)
-                if apo_pocket_selection1 == None:
-                    continue
-                apo_holo_pairs[f'apo_pocket_selection'].append(
-                    apo_pocket_selection1)
-                apo_holo_pairs[f'holo_pocket_selection'].append(
+            if apo_info.empty:
+                apo_holo_pairs['apo_pocket_selection'].append(None)
+                apo_holo_pairs['holo_pocket_selection'].append(
                     holo_pocket_selection)
-                for header, column in apo_info.loc[apo_row1.Index].items():
-                    apo_holo_pairs[f'apo_{header}'].append(column)
                 for header, column in holo_info.iloc[0].items():
                     apo_holo_pairs[f'holo_{header}'].append(column)
+                for header in apo_headers.keys():
+                    if header != 'apo_pocket_selection':
+                        apo_holo_pairs[header].append(None)
                 
+            else:
+                for apo_row1 in apo_info.itertuples():
+                    apo_pocket_selection1 = pymol_utils.get_pocket_selection(
+                        pocket_selections, apo_row1)
+                    if apo_pocket_selection1 == None:
+                        continue
+                    apo_holo_pairs[f'apo_pocket_selection'].append(
+                        apo_pocket_selection1)
+                    apo_holo_pairs[f'holo_pocket_selection'].append(
+                        holo_pocket_selection)
+                    for header, column in apo_info.loc[apo_row1.Index].items():
+                        apo_holo_pairs[f'apo_{header}'].append(column)
+                    for header, column in holo_info.iloc[0].items():
+                        apo_holo_pairs[f'holo_{header}'].append(column)
+
             df_apo_holo_pairs = pd.DataFrame.from_dict(apo_holo_pairs)
 
             df_apo_holo_pairs.to_csv(output_file_location, mode='a',
                                  header=not os.path.exists(output_file_location))
-        
+
 if __name__ == '__main__':
     main()
