@@ -95,7 +95,12 @@ def main():
 
             # skip if holo structure is multi-chain
             if '-' in str(holo_info['chains3'].iloc[0]):
-                continue 
+                continue
+
+            # skip hetero-complexes (multiple different UniProt IDs, space-separated)
+            # AF2 models single chains — these binding sites can't be compared to AF2 predictions
+            if ' ' in str(holo_info['UNPs'].iloc[0]):
+                continue
 
             assert holo_info.shape[0] == 1, f'Error: more than one holo structure found for {job}, batch: {batch}'
 
@@ -109,6 +114,7 @@ def main():
             apo_holo_pairs = apo_headers | holo_headers
             apo_holo_pairs['apo_pocket_selection'] = []
             apo_holo_pairs['holo_pocket_selection'] = []
+            apo_holo_pairs['af_holo_pocket_selection'] = []
 
             pocket_selections = pd.read_csv(
                 f'{INPUT_PATH}/{batch}/{job}/pocket_selections.csv', header=None)
@@ -116,16 +122,21 @@ def main():
             holo_pocket_selection = pymol_utils.get_pocket_selection(
                 pocket_selections, holo_info.iloc[0])
 
+            af_holo_pocket_selection = pymol_utils.get_alphafold_pocket_selection(
+                pocket_selections, holo_info.iloc[0])
+
             if apo_info.empty:
                 apo_holo_pairs['apo_pocket_selection'].append(None)
                 apo_holo_pairs['holo_pocket_selection'].append(
                     holo_pocket_selection)
+                apo_holo_pairs['af_holo_pocket_selection'].append(
+                    af_holo_pocket_selection)
                 for header, column in holo_info.iloc[0].items():
                     apo_holo_pairs[f'holo_{header}'].append(column)
                 for header in apo_headers.keys():
                     if header != 'apo_pocket_selection':
                         apo_holo_pairs[header].append(None)
-                
+
             else:
                 for apo_row1 in apo_info.itertuples():
                     apo_pocket_selection1 = pymol_utils.get_pocket_selection(
@@ -136,6 +147,8 @@ def main():
                         apo_pocket_selection1)
                     apo_holo_pairs[f'holo_pocket_selection'].append(
                         holo_pocket_selection)
+                    apo_holo_pairs[f'af_holo_pocket_selection'].append(
+                        af_holo_pocket_selection)
                     for header, column in apo_info.loc[apo_row1.Index].items():
                         apo_holo_pairs[f'apo_{header}'].append(column)
                     for header, column in holo_info.iloc[0].items():
